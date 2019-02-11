@@ -37,7 +37,7 @@ datatype 'a sl_formula =
   | exists 'a "'a sl_formula"
   (* Separation Logic *)
   | sl_emp
-  | sl_singl_heap 'a 'a
+  | sl_mapsto 'a 'a
   | sl_conj "'a sl_formula" "'a sl_formula"
   | sl_magic_wand "'a sl_formula" "'a sl_formula"
 
