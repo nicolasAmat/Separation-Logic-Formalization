@@ -22,25 +22,22 @@ type_synonym state = "(store \<times> heap)"
 type_synonym exp = "store \<Rightarrow> val"
 type_synonym bexp = "store \<Rightarrow> bool"
 
-typedecl sl_prop
-
 datatype 'a sl_formula =
-  (* Proposition *)
-    sl_prop
   (* Boolean *)
-  | True
-  | False
+    true
+  | false
   (* Classical Logic *)
   | not "'a sl_formula"
   | impl "'a sl_formula" "'a sl_formula"
   | conj "'a sl_formula" "'a sl_formula"
   | disj "'a sl_formula" "'a sl_formula"
+  | eq 'a 'a
   (* Quantifier *)
-  | forall "var" "'a sl_formula"
-  | exists "var" "'a sl_formula"
+  | forall 'a "'a sl_formula"
+  | exists 'a "'a sl_formula"
   (* Separation Logic *)
   | sl_emp
-  | sl_sing_heap exp exp
+  | sl_singl_heap 'a 'a
   | sl_conj "'a sl_formula" "'a sl_formula"
   | sl_magic_wand "'a sl_formula" "'a sl_formula"
 
