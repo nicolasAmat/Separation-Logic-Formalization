@@ -40,6 +40,7 @@ datatype 'a sl_formula =
   | exists "var" "'a sl_formula"
   (* Separation Logic *)
   | sl_emp
+  | sl_sing_heap exp exp
   | sl_conj "'a sl_formula" "'a sl_formula"
   | sl_magic_wand "'a sl_formula" "'a sl_formula"
 
