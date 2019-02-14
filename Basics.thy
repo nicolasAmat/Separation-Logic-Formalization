@@ -4,7 +4,7 @@
 
 section {* Formalization *}
 theory Basics
-  imports Main HOL.Map "HOL-Imperative_HOL.Heap"
+  imports Main HOL.Map
 begin                                                
 
 text {* Definition of the Syntax and Semantics *}
@@ -46,7 +46,6 @@ datatype 'a sl_formula =
   | sl_mapsto 'a 'a
   | sl_conj "'a sl_formula" "'a sl_formula"
   | sl_magic_wand "'a sl_formula" "'a sl_formula"
-
 
 subsection {* Some Functions Definitions *}
 
