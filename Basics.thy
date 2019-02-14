@@ -20,11 +20,10 @@ type_synonym store = "var \<Rightarrow> val"
 (*type_synonym heap = "addr \<rightharpoonup> val"
 type_synonym state = "(store \<times> heap)"
  *)
-
 definition a_heap :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
   "a_heap S A \<longleftrightarrow> S \<noteq> UNIV"
 
-typedef ('a, 'b) heaps = "{(s, v::'a \<Rightarrow> 'b). a_heap s v}"
+typedef ('a, 'b) heaps = "{(s, v::'a \<Rightarrow> 'b). a_heap s v}" unfolding a_heap_def by fastforce
 
 (* Formula Syntax *)
 datatype 'a sl_formula =
@@ -45,7 +44,6 @@ datatype 'a sl_formula =
   | sl_mapsto 'a 'a
   | sl_conj "'a sl_formula" "'a sl_formula"
   | sl_magic_wand "'a sl_formula" "'a sl_formula"
-
 
 subsection {* Some Functions Definitions *}
 
