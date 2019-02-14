@@ -4,7 +4,7 @@
 
 section {* Formalization *}
 theory Basics
-  imports Main HOL.Map "HOL-Imperative_HOL.Heap"
+  imports Main HOL.Map
 begin                                                
 
 text {* Definition of the Syntax and Semantics *}
@@ -20,6 +20,7 @@ type_synonym store = "var \<Rightarrow> val"
 (*type_synonym heap = "addr \<rightharpoonup> val"
 type_synonym state = "(store \<times> heap)"
  *)
+
 definition a_heap :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
   "a_heap S A \<longleftrightarrow> S \<noteq> UNIV"
 
