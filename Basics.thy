@@ -21,10 +21,10 @@ type_synonym store = "var \<Rightarrow> val"
 type_synonym state = "(store \<times> heap)"
  *)
 
-definition a_heap :: "addr set \<Rightarrow> val \<Rightarrow> bool" where
-  "a_heap A V \<longleftrightarrow> A \<noteq> UNIV"
+definition a_heap :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "a_heap S A \<longleftrightarrow> S \<noteq> UNIV"
 
-typedef ('a, 'v) heaps = "{(s, v::val). a_heap s v}"
+typedef ('a, 'b) heaps = "{(s, v::'a \<Rightarrow> 'b). a_heap s v}"
 
 (* Formula Syntax *)
 datatype 'a sl_formula =
