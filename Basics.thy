@@ -5,7 +5,7 @@
 section {* Formalization *}
 theory Basics
   imports Main HOL.Map
-begin                                                
+begin                                            
 
 text {* Definition of the Syntax and Semantics *}
 
@@ -58,15 +58,30 @@ datatype 'a sl_formula =
   | sl_conj "'a sl_formula" "'a sl_formula"
   | sl_magic_wand "'a sl_formula" "'a sl_formula"
 
+definition dom::"('a, 'b) heaps \<Rightarrow> 'a set" where
+  "dom h = {a. heap_func h a \<noteq> None}"
 
-definition disjoint_heaps where
+definition disjoint_heaps :: "('a, 'b) heaps \<Rightarrow> ('a, 'b) heaps \<Rightarrow> bool" where
   "disjoint_heaps h1 h2 \<longleftrightarrow> (dom h1) \<inter> (dom h2) = {}"
 
-definition union_heaps where
-  "union_heaps h1 h2 = h1 ++ h2"
+lemma finite_union_heaps:
+  assumes "finite (Map.dom (h1::('a \<Rightarrow> 'b option)))"
+    and "finite (Map.dom h2)"
+  shows "finite (Map.dom (h1++h2))"
+proof -
+  have finite_union_domains: "finite ((Map.dom h1) \<union> (Map.dom h2))"
+    by (simp add: assms(1) assms(2))
+  have union_inlude_into_union_domains:"Map.dom(h1 ++ h2) \<subseteq> (Map.dom h1) \<union> (Map.dom h2)"
+    by simp
+  from finite_union_domains and union_inlude_into_union_domains show "finite (Map.dom(h1++h2))"
+    by auto
+qed
+  
+definition union_heaps :: "('a, 'b) heaps \<Rightarrow> ('a, 'b) heaps \<Rightarrow> ('a, 'b) heaps" where
+  "union_heaps h1 h2 = Abs_heaps ((heap_func h1)++(heap_func h2))"
 
-definition hdom::"('a, 'b) heaps \<Rightarrow> 'a set" where
-  "hdom h = {a. heap_func h a \<noteq> None}"
+definition equal_heaps where
+  "equal_heaps h1 h2 = ((h1 \<subseteq>\<^sub>m h2) \<and> (h2 \<subseteq>\<^sub>m h1))"
 
 
   
