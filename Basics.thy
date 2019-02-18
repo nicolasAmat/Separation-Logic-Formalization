@@ -27,6 +27,9 @@ definition a_heap  where
 typedef ('a, 'b) heaps = "{(h::'a \<Rightarrow> 'b option). a_heap h}" unfolding a_heap_def
   using finite_dom_map_of by auto
 
+definition heap_func::"('a, 'b) heaps \<Rightarrow> ('a \<Rightarrow> 'b option)" where
+"heap_func h = Rep_heaps h"
+
 type_synonym ('a, 'b, 'c) interp = "('a \<Rightarrow> 'b) \<times> (('b, 'c) heaps)"
 
 definition store :: "('a, 'b, 'c) interp => 'a \<Rightarrow> 'b" 
@@ -61,9 +64,13 @@ definition disjoint_heaps where
 
 definition union_heaps where
   "union_heaps h1 h2 = h1 ++ h2"
-                           
 
-primrec valuation :: "(('a, 'b, 'c) interp) \<Rightarrow> 'a sl_formula \<Rightarrow> bool"
+definition hdom::"('a, 'b) heaps \<Rightarrow> 'a set" where
+  "hdom h = {a. heap_func h a \<noteq> None}"
+
+
+  
+primrec evaluation :: "(('a, 'b, 'c) interp) \<Rightarrow> 'a sl_formula \<Rightarrow> bool"
   where 
     "evaluation I true                = True"
   | "evaluation I false               = False" 
@@ -76,7 +83,7 @@ primrec valuation :: "(('a, 'b, 'c) interp) \<Rightarrow> 'a sl_formula \<Righta
   | "evaluation I (exists x f)        = (\<exists>u. (evaluation ((store I)(x:=u),(heap I)) f))"
   | "evaluation I (sl_emp)            = True"
   | "evaluation I (sl_mapsto x y)     = True"
-  | "evaluation I (sl_conj f g)       = (\<exists>h1::(('b, 'c)heaps). map_le h1 (heap I)::(('b, 'c)heaps))" (* (\<exists>h1::(('b, 'c) heaps). \<exists>h2::(('b, 'c) heaps). (map_le (union_heaps h1 h2) (heap I)) *) (* TODO *)
+  | "evaluation I (sl_conj f g)       =  (\<exists>h1::(('b, 'c) heaps). \<exists>h2::(('b, 'c) heaps). (union_heaps (heap_func h1) (heap_func h2) = heap_func (heap I)))"  (* TODO *)
   | "evaluation I (sl_magic_wand f g) \<longleftrightarrow> False" (*(\<exists>h1 h2. ((union_heaps h1 h2) =  (heap I)) \<and> disjoint_heaps )*) (* TODO *)
 
 
