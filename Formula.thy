@@ -13,6 +13,18 @@ begin
 
 subsection {* Formulas Syntax *}
 
+(* NP: mettre impl et conj et disj comme constructeurs de base risque de compliquer
+   certaines preuves, car il y aura plus de cas à considerer. Peut-etre il faut mieux se limiter
+   à un ensemble minimal de constructeurs et définir les autres des fonctions 
+   (eg (imp x y) = (disj (not x) y) ) *)
+
+(* NP: pour le cas mapsto, tel que c'est défini tu ne traites que le cas où les adresses 
+   pointent vers d'autres adresses (SL with 1 "record field"). 
+   En principe une adresse pointe vers un vecteur d'adresses... 
+   et il faut vérifier quelque part qu'on a bien des vecteurs de la bonne longueur. 
+   Cela ne peut être codé dans le datatype (me semble-t-il) puisqu'on a pas de type dépendent
+   en Isabelle *)
+
 datatype 'a sl_formula =
   (* Boolean *)
     true
@@ -34,6 +46,16 @@ datatype 'a sl_formula =
 
 
 subsection {* Formulas Semantics *}
+
+(* NP:  ci-dessous, il pourrait etre utile d'ajouter une fonction qui construit une 
+        interpretation à partir d'un store et heap (pour la modularité, cela permet de
+        changer la représentation des interprétations ci-besoin) *)
+
+(* NP: la définition de la semantique de sl_emp et sl_mapsto est incorrecte *)
+(* pour sl_emp il faut vérifier que le domaine heap est vide et pour sl_mapsto il faut
+   vérifier que dom est réduit à E et que heap I E = F *)
+
+(* NP: il semble plus consistent d'utiliser plutot x et y à la place de E et F *)
 
 primrec evaluation :: "(('a, 'b, 'c) interp) \<Rightarrow> 'a sl_formula \<Rightarrow> bool"
   where 

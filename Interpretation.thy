@@ -16,14 +16,21 @@ subsection {* Heap *}
 definition a_heap  where
   "a_heap h \<longleftrightarrow> finite (dom h)"
 
+(* NP:  En principe une heap est une fonction de 'a vers un vecteur (liste) de 'a) pas une fonction   
+        vers un type arbitraire 'b *)
+
 typedef ('a, 'b) heaps = "{(h::'a \<Rightarrow> 'b option). a_heap h}" unfolding a_heap_def
   using finite_dom_map_of by auto
 
-
 subsection {* Interpretation *}
 
-type_synonym ('a, 'b, 'c) interp = "('a \<Rightarrow> 'b) \<times> (('b, 'c) heaps)"
+(* NP:  avec ce qui est dit ci-dessus, il ne devrait pas y avoir 3 types mais 2 types: le type 
+        des variables et celui des adresses
+        Je suggère d'utiiser des notations consistantes pour dénoter ces types, eg 'a le type
+        des variables et 'b le type des adresses, et respecter ces conventions partout. 
+        Ou mieux encore ecrire explicitement 'var et 'addr *)
 
+type_synonym ('a, 'b, 'c) interp = "('a \<Rightarrow> 'b) \<times> (('b, 'c) heaps)"
 
 subsection {* Heap and Store from an Interpretation *}
 
@@ -32,7 +39,6 @@ definition store :: "('a, 'b, 'c) interp => 'a \<Rightarrow> 'b"
 
 definition heap :: "('a, 'b, 'c) interp \<Rightarrow> ('b, 'c) heaps"
   where "heap I = snd I"
-
 
 subsection {* Heaps Operations *}
 
