@@ -52,8 +52,8 @@ subsection {* Formulas Semantics *}
         changer la représentation des interprétations ci-besoin) *)
 
 (* NP: la définition de la semantique de sl_emp et sl_mapsto est incorrecte *)
-(* pour sl_emp il faut vérifier que le domaine heap est vide et pour sl_mapsto il faut
-   vérifier que dom est réduit à E et que heap I E = F *)
+(* pour sl_emp il faut vérifier que le domaine de la heap est vide et pour sl_mapsto il faut
+   vérifier que le domaine est réduit à E et que heap I E = F *)
 
 (* NP: il semble plus cohérent d'utiliser plutot x et y à la place de E et F *)
 
