@@ -55,7 +55,7 @@ subsection {* Formulas Semantics *}
 (* pour sl_emp il faut vérifier que le domaine heap est vide et pour sl_mapsto il faut
    vérifier que dom est réduit à E et que heap I E = F *)
 
-(* NP: il semble plus consistent d'utiliser plutot x et y à la place de E et F *)
+(* NP: il semble plus cohérent d'utiliser plutot x et y à la place de E et F *)
 
 primrec evaluation :: "(('a, 'b, 'c) interp) \<Rightarrow> 'a sl_formula \<Rightarrow> bool"
   where 
