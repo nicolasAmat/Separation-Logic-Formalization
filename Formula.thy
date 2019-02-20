@@ -22,7 +22,7 @@ subsection {* Formulas Syntax *}
    pointent vers d'autres adresses (SL with 1 "record field"). 
    En principe une adresse pointe vers un vecteur d'adresses... 
    et il faut vérifier quelque part qu'on a bien des vecteurs de la bonne longueur. 
-   Cela ne peut être codé dans le datatype (me semble-t-il) puisqu'on a pas de type dépendent
+   Cela ne peut être codé dans le datatype (me semble-t-il) puisqu'on a pas de type dépendant
    en Isabelle *)
 
 datatype 'a sl_formula =
