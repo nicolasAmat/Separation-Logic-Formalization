@@ -25,7 +25,6 @@ datatype ('a, 'b) sl_formula =
   | conj "('a, 'b) sl_formula" "('a, 'b) sl_formula"
   | disj "('a, 'b) sl_formula" "('a, 'b) sl_formula"
   (* Quantifier *)
-  | forall 'a "('a, 'b) sl_formula"
   | exists 'a "('a, 'b) sl_formula"
   (* Separation Logic *)
   | sl_emp
@@ -48,7 +47,6 @@ primrec evaluation :: "(('a, 'b, 'c) interp) \<Rightarrow> ('a, 'c) sl_formula \
   | "evaluation I (not P)             =  (\<not>(evaluation I P))"
   | "evaluation I (conj P Q)          = ((evaluation I P) \<and> (evaluation I Q))"
   | "evaluation I (disj P Q)          = ((evaluation I P) \<or> (evaluation I Q))"
-  | "evaluation I (forall x P)        = (\<forall>u. (evaluation ((store I)(x:=u),(heap I)) P))"
   | "evaluation I (exists x P)        = (\<exists>u. (evaluation ((store I)(x:=u),(heap I)) P))"
   | "evaluation I (sl_emp)            = empty_heaps (heap I)"
   | "evaluation I (sl_mapsto x y)     = True"
