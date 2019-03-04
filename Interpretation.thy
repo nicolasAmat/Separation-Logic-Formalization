@@ -63,7 +63,7 @@ definition empty_heaps :: "('addr, 'k) heaps \<Rightarrow> bool" where
 
 subsection {* Store Applied on a Vector *}
 
-definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> 'k::finite \<Rightarrow> 'addr" where 
+definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> 'k \<Rightarrow> 'addr" where 
 "addr_from_var_vector s v k = (s (vec_nth v k))"
 
 definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k::finite) vec" where
@@ -73,7 +73,7 @@ definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::
 subsection {* Useful Heaps Results *}
 
 lemma finite_union_heaps:
-  assumes "finite (Map.dom (h1::'addr \<Rightarrow> (('addr,'k) vec) option))"
+  assumes "finite (Map.dom (h1::'addr \<Rightarrow> (('addr, 'k) vec) option))"
     and "finite (Map.dom h2)"
   shows "finite (Map.dom (h1 ++ h2))"
 proof -
