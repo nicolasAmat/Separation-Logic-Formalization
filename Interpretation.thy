@@ -59,7 +59,16 @@ definition equal_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<R
 
 definition empty_heaps :: "('addr, 'k) heaps \<Rightarrow> bool" where
   "empty_heaps h \<equiv> Rep_heaps h = Map.empty"
-  
+
+
+subsection {* Store Applied on a Vector *}
+
+definition addr_from_var :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k) vec \<Rightarrow> 'k::finite \<Rightarrow> 'addr" where 
+"addr_from_var s v k = (s (Rep_vec v k))"
+
+definition resultat :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k) vec \<Rightarrow> ('addr, 'k) vec" where
+  "resultat s v =  addr_from_var s v"
+
 
 subsection {* Useful Heaps Results *}
 
