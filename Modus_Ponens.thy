@@ -17,11 +17,12 @@ begin
 subsection {* Proof *}
 
 lemma modus_ponens:
-  fixes I::"('var, 'addr, 'k::finite) interp" and P::"('var, 'k::finite) sl_formula" and Q::"('var, 'k::finite) sl_formula"
+  fixes I::"('var, 'addr, 'k::finite) interp" 
+    and P::"('var, 'k::finite) sl_formula" 
+    and Q::"('var, 'k::finite) sl_formula"
   assumes  "evaluation I (sl_conj P (sl_magic_wand P Q))"
   shows "evaluation I Q"
 proof -
   oops
-
 
 end
