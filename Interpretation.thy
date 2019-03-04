@@ -63,11 +63,11 @@ definition empty_heaps :: "('addr, 'k) heaps \<Rightarrow> bool" where
 
 subsection {* Store Applied on a Vector *}
 
-definition addr_from_var :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k) vec \<Rightarrow> 'k::finite \<Rightarrow> 'addr" where 
-"addr_from_var s v k = (s (Rep_vec v k))"
+definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> 'k::finite \<Rightarrow> 'addr" where 
+"addr_from_var_vector s v k = (s (vec_nth v k))"
 
-definition resultat :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k) vec \<Rightarrow> ('addr, 'k) vec" where
-  "resultat s v =  addr_from_var s v"
+definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k::finite) vec" where
+  "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
 
 
 subsection {* Useful Heaps Results *}
