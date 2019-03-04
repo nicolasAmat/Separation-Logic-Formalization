@@ -4,7 +4,7 @@
 
 section {* Modus Ponens *}
 
-text {* This section contains Modus Ponens like for the sepration logic. *}
+text {* This section contains the Modus Ponens like for the sepration logic. *}
 
 theory Modus_Ponens
   imports 
