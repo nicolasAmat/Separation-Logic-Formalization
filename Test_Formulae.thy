@@ -19,7 +19,7 @@ datatype ('var, 'k::finite) test_formulae =
     points_to 'var "('var, 'k::finite) vec"
   (* Alloc *)
   | alloc 'var
-
+(* TODO : |h| \<ge> n *)
 
 subsection {* Definitions *}
 
@@ -27,6 +27,7 @@ primrec tf_definition :: "('var, 'k::finite) test_formulae \<Rightarrow> ('var, 
   where
     "tf_definition (points_to x y) = sl_conj (sl_mapsto x y) true"
   | "tf_definition (alloc x)       = sl_magic_wand (sl_mapsto x (vec x)) false"
+(* TODO : |h| \<ge> n *)
 
 
 end
