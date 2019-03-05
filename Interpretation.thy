@@ -8,7 +8,6 @@ text {* This section contains the formalization of an interpretations in the sep
 
 theory Interpretation
   imports 
-    Main 
     "HOL.Map" 
     "HOL-Analysis.Finite_Cartesian_Product"
 begin

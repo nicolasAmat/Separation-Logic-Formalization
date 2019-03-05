@@ -7,8 +7,7 @@ section {* Relations *}
 text {* This section contains the logical consequence and the equivalence. *}
 
 theory Formula_Relation
-  imports 
-    Main 
+  imports
     Interpretation
     Formula
 begin
