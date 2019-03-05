@@ -91,17 +91,7 @@ lemma commutative_union_disjoint_heaps:
     and h2::"('addr, 'k) heaps"
   assumes "disjoint_heaps h1 h2"
   shows "union_heaps h1 h2 = union_heaps h2 h1"
-proof -
-  obtain aa :: "('addr \<Rightarrow> bool) \<Rightarrow> 'addr" where
-    f1: "\<forall>p. (Collect p \<noteq> {} \<or> (\<forall>a. \<not> p a)) \<and> (Collect p = {} \<or> p (aa p))"
-    by moura
-  have "Interpretation.dom h1 \<inter> Interpretation.dom h2 = {}"
-    by (meson assms disjoint_heaps_def)
-  then have "\<not> inf (\<lambda>a. a \<in> Map.dom (Rep_heaps h1)) (\<lambda>a. a \<in> Map.dom (Rep_heaps h2)) (aa (inf (\<lambda>a. a \<in> Map.dom (Rep_heaps h1)) (\<lambda>a. a \<in> Map.dom (Rep_heaps h2))))"
-    by (simp add: Interpretation.dom_def domIff inf_set_def)
-  then show ?thesis
-    using f1 by (metis (no_types) inf_set_def map_add_comm union_heaps_def)
-qed
+  by (metis Interpretation.dom_def Map.dom_def assms disjoint_heaps_def map_add_comm union_heaps_def)
 
 
 end
