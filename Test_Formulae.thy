@@ -13,24 +13,26 @@ theory Test_Formulae
 begin
 
 
-subsection {* Syntax *}
+subsection {* Points-to Relations in the Heap *}
 
-datatype ('var, 'addr, 'k::finite) test_formulae = 
-  (* Points-to Relations in the Heap *)
-    points_to 'var "('var, 'k::finite) vec"
-  (* Allocation *)
-  | alloc 'var
-  (* Cardinality Constraint *)
-  | size_heaps_superior_to "('addr, 'k) heaps" enat 
+definition points_to :: "'var \<Rightarrow> ('var, 'k) vec \<Rightarrow> ('var, 'k::finite) sl_formula"
+  where "points_to x y =  sl_conj (sl_mapsto x y) true"
 
 
-subsection {* Definitions *}
+subsection {* Allocation *}
 
-primrec tf_definition :: "('var, 'addr, 'k::finite) test_formulae \<Rightarrow> ('var, 'k::finite) sl_formula"
-  where
-    "tf_definition (points_to x y) = sl_conj (sl_mapsto x y) true"
-  | "tf_definition (alloc x)       = sl_magic_wand (sl_mapsto x (vec x)) false"
-(* TODO *)
+definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
+  where "alloc x = sl_magic_wand (sl_mapsto x (vec x)) false"
+
+
+subsection {* Cardinality Constraint *}
+
+fun card_heaps_superior_to :: "('addr, 'k) heaps \<Rightarrow> enat \<Rightarrow> ('var, 'k::finite) sl_formula"
+  where 
+      "card_heaps_superior_to h (enat (Suc n)) = sl_conj (card_heaps_superior_to h n) true"
+    | "card_heaps_superior_to h (enat 0) = true"
+    | "card_heaps_superior_to h \<infinity> = false"
+
 
 
 end
