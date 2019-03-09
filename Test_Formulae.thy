@@ -27,14 +27,15 @@ definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
 
 subsection {* Cardinality Constraint *}
 
-function card_heaps_superior_to :: "('addr, 'k) heaps \<Rightarrow> enat \<Rightarrow> ('var, 'k::finite) sl_formula"
-  where 
-      "card_heaps_superior_to h (enat (Suc n)) = sl_conj (card_heaps_superior_to h n) (not sl_emp)"
-    | "card_heaps_superior_to h (enat 0) = true"
-    | "card_heaps_superior_to h \<infinity> = false"
-  apply pat_completeness
-  by auto
-  termination sorry 
+primrec card_heaps_superior_to :: "('addr, 'k) heaps \<Rightarrow> nat \<Rightarrow> ('var, 'k::finite) sl_formula"
+  where   
+      "card_heaps_superior_to h (Suc n) = sl_conj (card_heaps_superior_to h n) (not sl_emp)"
+    | "card_heaps_superior_to h 0 = true"
+
+primrec extended_card_heaps_superior_to ::  "('addr, 'k) heaps \<Rightarrow> enat \<Rightarrow> ('var, 'k::finite) sl_formula"
+  where
+      "extended_card_heaps_superior_to h \<infinity> = false"
+    | "extended_card_heaps_superior_to h n = card_heaps_superior_to h n"
 
 
 end
