@@ -43,7 +43,7 @@ primrec evaluation :: "(('var, 'addr, 'k::finite) interp) \<Rightarrow> ('var, '
   | "evaluation I (exists x P)        = (\<exists>u. (evaluation (to_interp ((store I)(x:=u)) (heap I)) P))" 
   | "evaluation I (sl_emp)            = empty_heaps (heap I)"
   | "evaluation I (sl_mapsto x y)     = ((dom (heap I) = {(store I) x})
-                                      \<and> (Rep_heaps (heap I) ((store I) x) = Some (store_vector (store I) y)))"
+                                      \<and> ((store_and_heap I x) = Some (store_vector (store I) y)))"
   | "evaluation I (sl_conj P Q)       = (\<exists>h1 h2. (union_heaps h1 h2 = heap I)
                                                \<and> (disjoint_heaps h1 h2) 
                                                \<and> (evaluation (to_interp (store I) h1) P) 

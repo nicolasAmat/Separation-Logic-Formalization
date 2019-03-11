@@ -43,6 +43,12 @@ definition to_interp :: "('var \<Rightarrow> 'addr) \<Rightarrow> (('addr, 'k) h
   where "to_interp s h = (s, h)"
 
 
+subsection {* Consecutive Store and Heap on a variable *}
+
+definition store_and_heap :: "('var, 'addr, 'k) interp \<Rightarrow> 'var => ('addr, 'k) vec option"
+  where "store_and_heap I x = Rep_heaps (heap I) ((store I) x)"
+
+
 subsection {* Heaps Operations *}
 
 definition dom::"('addr, 'k) heaps \<Rightarrow> 'addr set" where
@@ -62,6 +68,7 @@ definition empty_heaps :: "('addr, 'k) heaps \<Rightarrow> bool" where
 
 definition card_heaps :: "('addr, 'k) heaps \<Rightarrow> enat" where
   "card_heaps h = card (dom h)"
+
 
 subsection {* Store Applied on a Vector *}
 

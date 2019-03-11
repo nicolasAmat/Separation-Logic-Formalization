@@ -29,11 +29,13 @@ proof -
                                      \<and> (evaluation (to_interp (store I) h2) (sl_magic_wand P Q))"
     using assms evaluation.simps(9) by blast 
   hence def_2: "\<exists>h2::('addr, 'k) heaps. 
-                    \<forall>h3::('addr, 'k) heaps. ((disjoint_heaps h3 h2) \<and> (evaluation (to_interp (store I) h3) P))
-                                         \<longrightarrow> (evaluation (to_interp (store I) (union_heaps h2  h3)) Q)"
+                \<forall>h3::('addr, 'k) heaps. ((disjoint_heaps h3 h2) 
+                                       \<and> (evaluation (to_interp (store I) h3) P))
+                                    \<longrightarrow> (evaluation (to_interp (store I) (union_heaps h2  h3)) Q)"
     by (metis evaluation.simps(10) fst_conv store_def to_interp_def)
   from def_1 and def_2  show "evaluation I Q"
-    by (metis commutative_union_disjoint_heaps evaluation.simps(10) fst_conv heap_def prod.exhaust_sel snd_conv store_def to_interp_def)  
+    by (metis commutative_union_disjoint_heaps evaluation.simps(10) fst_conv 
+        heap_def prod.exhaust_sel snd_conv store_def to_interp_def)  
 qed
 
 

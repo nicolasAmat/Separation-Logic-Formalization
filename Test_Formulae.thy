@@ -56,18 +56,25 @@ lemma tf_prop_1:
     and x::"'var"
     and y::"('var, 'k::finite) vec"
   shows "(evaluation I (points_to x y)) 
-     \<longleftrightarrow> (Rep_heaps (heap I) ((store I) x) = Some (store_vector (store I) y))"
+     \<longleftrightarrow> (store_and_heap I x = Some (store_vector (store I) y))"
 proof
   assume "evaluation I (points_to x y)"
   hence "evaluation I (sl_conj (sl_mapsto x y) true)"
     by (simp add: points_to_def)
-  moreover hence "\<exists>h1 h2. (union_heaps h1 h2 = heap I) 
+  hence "\<exists>h1 h2. (union_heaps h1 h2 = heap I) 
                \<and> (disjoint_heaps h1 h2) 
                \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
                \<and> (evaluation (to_interp (store I) h2) (true))"
     using evaluation.simps(9) by blast
-  ultimately show "Rep_heaps (heap I) (store I x) = Some (store_vector (store I) y)"
+  hence "\<exists>h. (evaluation (to_interp (store I) h) (sl_mapsto x y))"
+    by blast
+  hence "\<exists>h. ((dom h = {(store I) x}) 
+           \<and> (store_and_heap (to_interp (store I) h) x = Some (store_vector (store I) y)))"
 oops
+
+  
+(* "Rep_heaps (heap I) (store I x) = Some (store_vector (store I) y)" *)
+
 
 (*
   next
