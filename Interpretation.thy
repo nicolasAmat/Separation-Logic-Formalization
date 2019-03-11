@@ -10,6 +10,7 @@ theory Interpretation
   imports 
     "HOL.Map" 
     "HOL-Analysis.Finite_Cartesian_Product"
+    "HOL-Library.Extended_Nat"
 begin
 
 
@@ -38,8 +39,8 @@ definition heap :: "('var, 'addr, 'k) interp \<Rightarrow> ('addr, 'k) heaps"
 
 subsection {* Interpretation from an Heap and a Store *}
 
-definition constructor_interp :: "('var \<Rightarrow> 'addr) \<Rightarrow> (('addr, 'k) heaps) \<Rightarrow> ('var, 'addr, 'k) interp"
-  where "constructor_interp s h = (s, h)"
+definition to_interp :: "('var \<Rightarrow> 'addr) \<Rightarrow> (('addr, 'k) heaps) \<Rightarrow> ('var, 'addr, 'k) interp"
+  where "to_interp s h = (s, h)"
 
 
 subsection {* Heaps Operations *}
@@ -57,8 +58,10 @@ definition equal_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<R
   "equal_heaps h1 h2 = ((Rep_heaps h1 \<subseteq>\<^sub>m Rep_heaps h2) \<and> (Rep_heaps h2 \<subseteq>\<^sub>m Rep_heaps h1))"
 
 definition empty_heaps :: "('addr, 'k) heaps \<Rightarrow> bool" where
-  "empty_heaps h \<equiv> Rep_heaps h = Map.empty"
+  "empty_heaps h = (Rep_heaps h = Map.empty)"
 
+definition card_heaps :: "('addr, 'k) heaps \<Rightarrow> enat" where
+  "card_heaps h = card (dom h)"
 
 subsection {* Store Applied on a Vector *}
 
