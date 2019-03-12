@@ -51,6 +51,7 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
 
 subsection {* Propositions *}
 
+(* using à améliorer ? drafts... *)
 lemma tf_prop_1:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
@@ -61,35 +62,36 @@ proof
   assume "evaluation I (points_to x y)"
   hence "evaluation I (sl_conj (sl_mapsto x y) true)"
     by (simp add: points_to_def)
-  hence "\<exists>h1 h2. (union_heaps h1 h2 = heap I) 
-               \<and> (disjoint_heaps h1 h2) 
-               \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
-               \<and> (evaluation (to_interp (store I) h2) (true))"
+  from this obtain h1 h2 where "(union_heaps h1 h2 = heap I) 
+                              \<and> (disjoint_heaps h1 h2) 
+                              \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
+                              \<and> (evaluation (to_interp (store I) h2) (true))"
     using evaluation.simps(9) by blast
-  hence "\<exists>h. (evaluation (to_interp (store I) h) (sl_mapsto x y))"
-    by blast
-  hence "\<exists>h. ((dom h = {(store I) x}) 
-           \<and> (store_and_heap (to_interp (store I) h) x = Some (store_vector (store I) y)))"
+  hence "(store I x \<in> dom h1) \<and> (dom h1 \<subseteq> dom (heap I))"
+    by (metis draft_1 draft_2 draft_3 evaluation.simps(8) insertI1)
+  hence"store_and_heap I x = store_and_heap (to_interp (store I) h1) x"
+    using \<open>union_heaps h1 h2 = heap I 
+         \<and> disjoint_heaps h1 h2 
+         \<and> evaluation (to_interp (store I) h1) (sl_mapsto x y) 
+         \<and> evaluation (to_interp (store I) h2) true\<close> 
+          Abs_heaps_inverse Rep_heaps a_heap_def commutative_union_disjoint_heaps draft_1 draft_2 
+          evaluation.simps(8) finite_union_heaps map_add_find_right mem_Collect_eq 
+          store_and_heap_def union_heaps_def
+    by (metis (no_types, lifting))
+  thus "(store_and_heap I x = Some (store_vector (store I) y))"
+    using \<open>union_heaps h1 h2 = heap I 
+         \<and> disjoint_heaps h1 h2 
+         \<and> evaluation (to_interp (store I) h1) (sl_mapsto x y) 
+         \<and> evaluation (to_interp (store I) h2) true\<close> 
+          draft_1 evaluation.simps(8)
+    by (simp add: draft_1)
+next
+  assume "(store_and_heap I x = Some (store_vector (store I) y))"
+  from this obtain h1 h2 where ""
+  (*TODO*)
+  thus "(store_and_heap I x = Some (store_vector (store I) y))"
 oops
 
-  
-(* "Rep_heaps (heap I) (store I x) = Some (store_vector (store I) y)" *)
-
-
-(*
-  next
-  show "evaluation I (points_to x y) 
-    \<Longrightarrow> Rep_heaps (heap I) (store I x) = Some (store_vector (store I) y)" 
-  show "Rep_heaps (heap I) (store I x) = Some (store_vector (store I) y) 
-    \<Longrightarrow> evaluation I (points_to x y)"
-  proof -
-    assume "Rep_heaps (heap I) (store I x) = Some (store_vector (store I) y)"
-    let h1= 
-    have "\<exists>h1 h2. (union_heaps h1 h2 = (heap I))
-                \<and> (disjoint_heaps h1 h2)
-                \<and> (dom h1 = {(store I) x})"
-oops
-*)
 
 lemma tf_prop_2:
   fixes I::"('var, 'addr, 'k::finite) interp"

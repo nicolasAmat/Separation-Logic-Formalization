@@ -78,6 +78,47 @@ definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('v
 definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k::finite) vec" where
   "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
 
+(* Reprendre les lemmes draft *)
+(* renommer dom en dom_heaps *)
+(* reprendre les differentes preuves par conséquent *)
+subsection {* DRAFT *}
+
+lemma draft_1:
+  fixes I::"('var, 'addr, 'k) interp"
+    and x::"'var"
+    and h::"('addr, 'k) heaps"
+  shows "store (to_interp (store I) h) = store I"
+  by (simp add: store_def to_interp_def)
+
+lemma draft_2:
+  fixes I::"('var, 'addr, 'k) interp"
+    and h::"('addr, 'k) heaps"
+  shows "heap (to_interp (store I) h) = h"
+  by (simp add: heap_def to_interp_def)
+
+lemma draft_3:
+  fixes h::"('addr, 'k) heaps"
+    and h1::"('addr, 'k) heaps"
+    and h2::"('addr, 'k) heaps"
+  assumes "union_heaps h1 h2 = h"
+  shows "dom h1 \<subseteq> dom h"
+proof
+  fix x
+  assume "x \<in> dom h1"
+  hence "x \<in> (dom (union_heaps h1 h2))"
+    proof -
+      have f1: "x \<in> Map.dom (Rep_heaps h1)"
+    using Interpretation.dom_def \<open>x \<in> Interpretation.dom h1\<close> by fastforce
+      have f2: "a_heap (Rep_heaps h1)"
+    using Rep_heaps by blast
+      have "a_heap (Rep_heaps h2)"
+        using Rep_heaps by blast
+      then show ?thesis
+        using f2 f1 by (simp add: Abs_heaps_inverse Interpretation.dom_def a_heap_def domIff union_heaps_def)
+    qed
+  thus "x\<in>dom h"
+    by (simp add: assms)
+qed
 
 subsection {* Useful Heaps Results *}
 
