@@ -51,7 +51,6 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
 
 subsection {* Propositions *}
 
-(* using à améliorer ? drafts... *)
 lemma tf_prop_1:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
@@ -63,9 +62,9 @@ proof
   hence "evaluation I (sl_conj (sl_mapsto x y) true)"
     by (simp add: points_to_def)
   from this obtain h1 h2 where def_0: "(union_heaps h1 h2 = heap I) 
-                                   \<and> (disjoint_heaps h1 h2) 
-                                   \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
-                                   \<and> (evaluation (to_interp (store I) h2) (true))"
+                                     \<and> (disjoint_heaps h1 h2) 
+                                     \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
+                                     \<and> (evaluation (to_interp (store I) h2) (true))"
     using evaluation.simps(9) by blast
   hence "(store I x \<in> dom h1) \<and> (dom h1 \<subseteq> dom (heap I))"
     by (metis draft_1 draft_2 draft_3 evaluation.simps(8) insertI1)
@@ -78,11 +77,19 @@ proof
     by (metis def_0 draft_1 evaluation.simps(8))
 next
   assume "(store_and_heap I x = Some (store_vector (store I) y))"
-  from this obtain h1 h2 where ""
-  (*TODO*)
-  thus "(store_and_heap I x = Some (store_vector (store I) y))"
-oops
+  moreover define h1 where "h1 = Abs_heaps((\<lambda>x. None)(store I x := Some (store_vector (store I) y)))"
+  moreover define h2 where "h2 = Abs_heaps((Rep_heaps (heap I))(store I x := None))"
+  ultimately have "(disjoint_heaps h1 h2) 
+                 \<and> (union_heaps h1 h2 = heap I)"
+    using Abs_heaps_inverse DiffE Interpretation.dom_def Rep_heaps Rep_heaps_inverse a_heap_def 
+          disjoint_heaps_def disjoint_iff_not_equal domIff dom_empty dom_fun_upd finite.emptyI 
+          finite_insert fun_upd_upd insert_Diff map_add_empty map_add_upd map_le_iff_map_add_commute 
+          map_le_imp_upd_le map_le_refl map_upd_triv mem_Collect_eq store_and_heap_def union_heaps_def
+  
 
+
+thus "evaluation I (points_to x y)"
+oops
 
 lemma tf_prop_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -90,7 +97,9 @@ lemma tf_prop_2:
   shows "(evaluation I (alloc x)) 
      \<longleftrightarrow> store I x \<in> (Interpretation.dom (heap I))"
 proof
-  show "evaluation I (alloc x) \<Longrightarrow> store I x \<in> Interpretation.dom (heap I)"
+  assume "evaluation I (alloc x)"
+  thus "store I x \<in> (Interpretation.dom (heap I))"
+
 oops
 
 lemma tf_prop_3:
@@ -99,7 +108,8 @@ lemma tf_prop_3:
   shows "evaluation I (ext_card_heaps_superior_to n)
     \<longleftrightarrow> card_heaps (heap I) \<ge> n"
 proof
-  show "evaluation I (ext_card_heaps_superior_to n) \<Longrightarrow> n \<le> card_heaps (heap I)"
+  assume "evaluation I (ext_card_heaps_superior_to n)"
+  thus "card_heaps (heap I) \<ge> n"
 oops
 
 

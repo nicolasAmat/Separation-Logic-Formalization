@@ -79,7 +79,7 @@ definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::
   "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
 
 (* Reprendre les lemmes draft *)
-(* renommer dom en dom_heaps *)
+(* renommer dom en dom_heaps (Map.dom \<Rightarrow> dom et Interpretation.dom \<Rightarrow> dom_heaps)*)
 (* reprendre les differentes preuves par conséquent *)
 subsection {* DRAFT *}
 
@@ -119,6 +119,30 @@ proof
   thus "x\<in>dom h"
     by (simp add: assms)
 qed
+
+lemma dom_empty_heaps:
+  fixes h::"('addr, 'k) heaps"
+  assumes "empty_heaps h"
+  shows "dom h = {}"
+  using Interpretation.dom_def assms empty_heaps_def by force
+
+lemma dom_update_add_element:
+  fixes h::"('addr, 'k) heaps"
+    and x::"'addr"
+    and y::"('addr, 'k) vec"
+  assumes "x \<notin> (dom h)"
+  shows "dom (Abs_heaps((Rep_heaps h)(x := (Some y)))) = ((dom h) \<union> {x})"
+  by (metis Abs_heaps_inverse Interpretation.dom_def Map.dom_def Rep_heaps Un_insert_right 
+      a_heap_def dom_fun_upd finite_insert mem_Collect_eq option.simps(3) sup_bot.comm_neutral)
+
+lemma dom_update_remove_element:
+  fixes h::"('addr, 'k) heaps"
+    and x::"'addr"
+  assumes "x \<in> (dom h)"
+  shows "dom (Abs_heaps((Rep_heaps h)(x := None))) \<union> {x} = (dom h)"
+  by (metis Abs_heaps_inverse Interpretation.dom_def Map.dom_def Rep_heaps Un_insert_right 
+      a_heap_def assms dom_fun_upd finite_insert insert_Diff mem_Collect_eq sup_bot.comm_neutral)
+  
 
 subsection {* Useful Heaps Results *}
 
