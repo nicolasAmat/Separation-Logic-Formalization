@@ -7,7 +7,7 @@ section {* Modus Ponens *}
 text {* This section contains the Modus Ponens like for the sepration logic. *}
 
 theory Modus_Ponens
-  imports  
+imports  
     Interpretation
     Formula
 begin
@@ -34,8 +34,8 @@ proof -
                                     \<longrightarrow> (evaluation (to_interp (store I) (union_heaps h2  h3)) Q)"
     by (metis evaluation.simps(10) fst_conv store_def to_interp_def)
   from def_1 and def_2  show "evaluation I Q"
-    by (metis commutative_union_disjoint_heaps evaluation.simps(10) fst_conv 
-        heap_def prod.exhaust_sel snd_conv store_def to_interp_def)  
+    by (metis commutative_union_disjoint_heaps evaluation.simps(10) fst_conv heap_def 
+        prod.exhaust_sel snd_conv store_def to_interp_def)  
 qed
 
 

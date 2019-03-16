@@ -7,7 +7,7 @@ section {* Test Formulae *}
 text {* This section contains test formulae. *}
 
 theory Test_Formulae
-  imports
+imports
     Formula
     "HOL-Library.Extended_Nat"
 begin
@@ -66,7 +66,7 @@ proof
                                      \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
                                      \<and> (evaluation (to_interp (store I) h2) (true))"
     using evaluation.simps(9) by blast
-  hence "(store I x \<in> dom h1) \<and> (dom h1 \<subseteq> dom (heap I))"
+  hence "(store I x \<in> h_dom h1) \<and> (h_dom h1 \<subseteq> h_dom (heap I))"
     by (metis draft_1 draft_2 draft_3 evaluation.simps(8) insertI1)
   hence"store_and_heap I x = store_and_heap (to_interp (store I) h1) x"
     using def_0 Abs_heaps_inverse Rep_heaps a_heap_def commutative_union_disjoint_heaps draft_1 
@@ -81,11 +81,11 @@ next
   moreover define h2 where "h2 = Abs_heaps((Rep_heaps (heap I))(store I x := None))"
   ultimately have "(disjoint_heaps h1 h2) 
                  \<and> (union_heaps h1 h2 = heap I)"
-    using Abs_heaps_inverse DiffE Interpretation.dom_def Rep_heaps Rep_heaps_inverse a_heap_def 
+    using Abs_heaps_inverse DiffE h_dom_def Rep_heaps Rep_heaps_inverse a_heap_def 
           disjoint_heaps_def disjoint_iff_not_equal domIff dom_empty dom_fun_upd finite.emptyI 
           finite_insert fun_upd_upd insert_Diff map_add_empty map_add_upd map_le_iff_map_add_commute 
           map_le_imp_upd_le map_le_refl map_upd_triv mem_Collect_eq store_and_heap_def union_heaps_def
-  
+    by smt
 
 
 thus "evaluation I (points_to x y)"
@@ -95,10 +95,10 @@ lemma tf_prop_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
   shows "(evaluation I (alloc x)) 
-     \<longleftrightarrow> store I x \<in> (Interpretation.dom (heap I))"
+     \<longleftrightarrow> store I x \<in> (h_dom (heap I))"
 proof
   assume "evaluation I (alloc x)"
-  thus "store I x \<in> (Interpretation.dom (heap I))"
+  thus "store I x \<in> (h_dom (heap I))"
 
 oops
 
