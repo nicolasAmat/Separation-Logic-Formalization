@@ -143,23 +143,25 @@ lemma dom_update_remove_element:
   shows "h_dom (Abs_heaps((Rep_heaps h)(x := None))) \<union> {x} = (h_dom h)"
   by (metis Abs_heaps_inverse h_dom_def dom_def Rep_heaps Un_insert_right a_heap_def assms 
       dom_fun_upd finite_insert insert_Diff mem_Collect_eq sup_bot.comm_neutral)
-  
+
 
 subsection {* Useful Heaps Results *}
 
 lemma finite_union_heaps:
-  fixes h1::"'addr \<Rightarrow> (('addr, 'k) vec) option"
-    and h2::"'addr \<Rightarrow> (('addr, 'k) vec) option"
-  assumes "finite (dom h1)"
-    and "finite (dom h2)"
-  shows "finite (dom (h1 ++ h2))"
+  fixes h1::"('addr, 'k) heaps"
+    and h2::"('addr, 'k) heaps"
+  assumes "finite (h_dom h1)"
+    and "finite (h_dom h2)"
+  shows "finite (h_dom (union_heaps h1 h2))"
 proof -
-  have finite_union_domains: "finite ((dom h1) \<union> (dom h2))"
+  have finite_union_domains: "finite ((h_dom h1) \<union> (h_dom h2))"
     by (simp add: assms(1) assms(2))
-  have union_inlude_into_union_domains:"dom (h1 ++ h2) \<subseteq> (dom h1) \<union> (dom h2)"
-    by simp
-  from finite_union_domains and union_inlude_into_union_domains show "finite (dom(h1 ++ h2))"
-    by auto
+  have union_inlude_into_union_domains:"h_dom (union_heaps h1 h2) \<subseteq> (h_dom h1) \<union> (h_dom h2)"
+    by (metis Abs_heaps_inverse Rep_heaps a_heap_def dom_def dom_map_add h_dom_def infinite_Un 
+        le_sup_iff mem_Collect_eq sup_ge1 sup_ge2 union_heaps_def)
+  from finite_union_domains and union_inlude_into_union_domains 
+  show "finite (h_dom (union_heaps h1 h2))"
+    using infinite_super by blast
 qed
 
 lemma commutative_union_disjoint_heaps:
