@@ -50,6 +50,27 @@ definition store_and_heap :: "('var, 'addr, 'k) interp \<Rightarrow> 'var => ('a
   where "store_and_heap I x = Rep_heaps (heap I) ((store I) x)"
 
 
+subsection {* Get from Heap *}
+
+definition get_from_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) vec option"
+  where "get_from_heap h x = Rep_heaps h x"
+
+
+subsection {* Heap Constructors *}
+
+definition h_empty :: "('addr, 'k) heaps"
+  where "h_empty \<equiv> Abs_heaps(\<lambda>x. None)"
+
+definition h_singleton :: "'addr \<Rightarrow> ('addr, 'k) vec \<Rightarrow> ('addr, 'k) heaps"
+  where "h_singleton x y = Abs_heaps((\<lambda>x. None) (x := Some y))"
+
+definition remove_from_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) heaps"
+  where "remove_from_heap h x = Abs_heaps ((Rep_heaps h) (x := None))"
+
+definition add_to_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) vec \<Rightarrow> ('addr, 'k) heaps"
+  where "add_to_heap h x y = Abs_heaps ((Rep_heaps h) (x := Some y))"
+
+
 subsection {* Heaps Operations *}
 
 definition h_dom :: "('addr, 'k) heaps \<Rightarrow> 'addr set"
@@ -64,11 +85,11 @@ definition union_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<R
 definition equal_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> bool"
   where "equal_heaps h1 h2 = ((Rep_heaps h1 \<subseteq>\<^sub>m Rep_heaps h2) \<and> (Rep_heaps h2 \<subseteq>\<^sub>m Rep_heaps h1))"
 
-definition empty_heaps :: "('addr, 'k) heaps \<Rightarrow> bool"
-  where "empty_heaps h = (Rep_heaps h = Map.empty)"
+definition empty_heap :: "('addr, 'k) heaps \<Rightarrow> bool"
+  where "empty_heap h = (Rep_heaps h = Map.empty)"
 
-definition card_heaps :: "('addr, 'k) heaps \<Rightarrow> enat" 
-  where "card_heaps h = card (h_dom h)"
+definition card_heap :: "('addr, 'k) heaps \<Rightarrow> enat" 
+  where "card_heap h = card (h_dom h)"
 
 
 subsection {* Store Applied on a Vector *}
@@ -79,71 +100,68 @@ definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('v
 definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k::finite) vec"
   where "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
 
-(* Reprendre les lemmes draft *)
-(* renommer dom en dom_heaps (Map.dom \<Rightarrow> dom et Interpretation.dom \<Rightarrow> dom_heaps)*)
-(* reprendre les differentes preuves par conséquent *)
+
 subsection {* DRAFT *}
 
-lemma draft_1:
+lemma store_on_to_interp:
   fixes I::"('var, 'addr, 'k) interp"
     and x::"'var"
     and h::"('addr, 'k) heaps"
   shows "store (to_interp (store I) h) = store I"
   by (simp add: store_def to_interp_def)
 
-lemma draft_2:
+lemma heap_on_to_interp:
   fixes I::"('var, 'addr, 'k) interp"
     and h::"('addr, 'k) heaps"
   shows "heap (to_interp (store I) h) = h"
   by (simp add: heap_def to_interp_def)
 
-lemma draft_3:
+lemma sub_heap_included:
   fixes h::"('addr, 'k) heaps"
     and h1::"('addr, 'k) heaps"
     and h2::"('addr, 'k) heaps"
   assumes "union_heaps h1 h2 = h"
   shows "h_dom h1 \<subseteq> h_dom h"
-proof
-  fix x
-  assume "x \<in> h_dom h1"
-  hence "x \<in> (h_dom (union_heaps h1 h2))"
-    proof -
-      have f1: "x \<in> dom (Rep_heaps h1)"
-    using h_dom_def \<open>x \<in> h_dom h1\<close> by fastforce
-      have f2: "a_heap (Rep_heaps h1)"
-    using Rep_heaps by blast
-      have "a_heap (Rep_heaps h2)"
-        using Rep_heaps by blast
-      then show ?thesis
-        using f2 f1 by (simp add: Abs_heaps_inverse h_dom_def a_heap_def domIff union_heaps_def)
-    qed
-  thus "x \<in> h_dom h"
-    by (simp add: assms)
-qed
+  by (metis Abs_heaps_inverse Rep_heaps a_heap_def assms dom_def dom_map_add finite_Un h_dom_def 
+      mem_Collect_eq sup_ge2 union_heaps_def)
 
-lemma dom_empty_heaps:
-  fixes h::"('addr, 'k) heaps"
-  assumes "empty_heaps h"
-  shows "h_dom h = {}"
-  using h_dom_def assms empty_heaps_def by force
+lemma h_dom_empty_heap:
+  "h_dom h_empty = {}"
+  by (simp add: Abs_heaps_inverse a_heap_def h_dom_def h_empty_def)
 
-lemma dom_update_add_element:
+lemma h_dom_add_element:
   fixes h::"('addr, 'k) heaps"
     and x::"'addr"
     and y::"('addr, 'k) vec"
   assumes "x \<notin> (h_dom h)"
-  shows "h_dom (Abs_heaps((Rep_heaps h)(x := (Some y)))) = ((h_dom h) \<union> {x})"
-  by (metis Abs_heaps_inverse h_dom_def dom_def Rep_heaps Un_insert_right a_heap_def dom_fun_upd 
-      finite_insert mem_Collect_eq option.simps(3) sup_bot.comm_neutral)
+  shows "h_dom (add_to_heap h x y) = ((h_dom h) \<union> {x})"
+  by (metis Abs_heaps_inverse Rep_heaps Un_insert_right a_heap_def add_to_heap_def dom_def 
+      dom_fun_upd finite_insert h_dom_def mem_Collect_eq option.distinct(1) sup_bot.comm_neutral)
 
-lemma dom_update_remove_element:
+lemma h_dom_remove_element:
   fixes h::"('addr, 'k) heaps"
     and x::"'addr"
   assumes "x \<in> (h_dom h)"
-  shows "h_dom (Abs_heaps((Rep_heaps h)(x := None))) \<union> {x} = (h_dom h)"
-  by (metis Abs_heaps_inverse h_dom_def dom_def Rep_heaps Un_insert_right a_heap_def assms 
-      dom_fun_upd finite_insert insert_Diff mem_Collect_eq sup_bot.comm_neutral)
+  shows "h_dom (remove_from_heap h x) = (h_dom h) - {x}"
+  by (metis Abs_heaps_inverse Diff_subset Rep_heaps a_heap_def dom_def dom_fun_upd h_dom_def 
+      infinite_super mem_Collect_eq remove_from_heap_def)
 
+lemma disjoint_add_remove_element:
+  fixes h::"('addr, 'k) heaps"
+    and x::"'addr"
+    and y::"('addr, 'k) vec"
+  assumes "x \<in> (h_dom h)"
+    and "get_from_heap h x = Some y"
+  shows "disjoint_heaps (add_to_heap h_empty x y) (remove_from_heap h x)"
+  by (simp add: assms(1) disjoint_heaps_def h_dom_add_element h_dom_empty_heap h_dom_remove_element)
+
+lemma union_add_remove_element:
+  fixes h::"('addr, 'k) heaps"
+    and x::"'addr"
+  assumes  "x \<in> (h_dom h)"
+    and "get_from_heap h x = Some y"
+  shows "union_heaps (add_to_heap h_empty x y) (remove_from_heap h x) = h"
+  oops
 
 subsection {* Useful Heaps Results *}
 
@@ -153,23 +171,14 @@ lemma finite_union_heaps:
   assumes "finite (h_dom h1)"
     and "finite (h_dom h2)"
   shows "finite (h_dom (union_heaps h1 h2))"
-proof -
-  have finite_union_domains: "finite ((h_dom h1) \<union> (h_dom h2))"
-    by (simp add: assms(1) assms(2))
-  have union_inlude_into_union_domains:"h_dom (union_heaps h1 h2) \<subseteq> (h_dom h1) \<union> (h_dom h2)"
-    by (metis Abs_heaps_inverse Rep_heaps a_heap_def dom_def dom_map_add h_dom_def infinite_Un 
-        le_sup_iff mem_Collect_eq sup_ge1 sup_ge2 union_heaps_def)
-  from finite_union_domains and union_inlude_into_union_domains 
-  show "finite (h_dom (union_heaps h1 h2))"
-    using infinite_super by blast
-qed
+  by (metis Rep_heaps a_heap_def dom_def h_dom_def mem_Collect_eq)
 
 lemma commutative_union_disjoint_heaps:
   fixes h1::"('addr, 'k) heaps"
     and h2::"('addr, 'k) heaps"
   assumes "disjoint_heaps h1 h2"
   shows "union_heaps h1 h2 = union_heaps h2 h1"
-  by (metis h_dom_def dom_def assms disjoint_heaps_def map_add_comm union_heaps_def)
+  by (metis (full_types) assms disjoint_heaps_def dom_def h_dom_def map_add_comm union_heaps_def) 
 
 
 end

@@ -32,10 +32,10 @@ proof -
                 \<forall>h3::('addr, 'k) heaps. ((disjoint_heaps h3 h2) 
                                        \<and> (evaluation (to_interp (store I) h3) P))
                                     \<longrightarrow> (evaluation (to_interp (store I) (union_heaps h2  h3)) Q)"
-    by (metis draft_1 evaluation.simps(10))
+    by (metis evaluation.simps(10) store_on_to_interp)
   from def_1 and def_2  show "evaluation I Q"
-    by (metis commutative_union_disjoint_heaps draft_1 draft_2 evaluation.simps(10) prod.exhaust_sel 
-        store_def to_interp_def) 
+    by (metis commutative_union_disjoint_heaps evaluation.simps(10) heap_def heap_on_to_interp 
+        prod.exhaust_sel store_def store_on_to_interp)
 qed
 
 

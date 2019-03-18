@@ -33,7 +33,7 @@ datatype ('var, 'k::finite) sl_formula =
 
 subsection {* Formulas Semantics *}
 
-primrec evaluation :: "(('var, 'addr, 'k) interp) \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool"
+primrec evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool"
   where 
     "evaluation I true                = True"
   | "evaluation I false               = False" 
@@ -41,7 +41,7 @@ primrec evaluation :: "(('var, 'addr, 'k) interp) \<Rightarrow> ('var, 'k::finit
   | "evaluation I (not P)             = (\<not>(evaluation I P))"
   | "evaluation I (conj P Q)          = ((evaluation I P) \<and> (evaluation I Q))"
   | "evaluation I (exists x P)        = (\<exists>u. (evaluation (to_interp ((store I)(x:=u)) (heap I)) P))" 
-  | "evaluation I (sl_emp)            = empty_heaps (heap I)"
+  | "evaluation I (sl_emp)            = empty_heap (heap I)"
   | "evaluation I (sl_mapsto x y)     = ((h_dom (heap I) = {(store I) x})
                                       \<and> ((store_and_heap I x) = Some (store_vector (store I) y)))"
   | "evaluation I (sl_conj P Q)       = (\<exists>h1 h2. (union_heaps h1 h2 = heap I)
