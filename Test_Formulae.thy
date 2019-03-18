@@ -54,9 +54,9 @@ subsection {* Propositions *}
 lemma tf_prop_1:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
-    and y::"('var, 'k::finite) vec"
+    and y::"('var, 'k) vec"
   shows "(evaluation I (points_to x y)) 
-     \<longleftrightarrow> (store_and_heap I x = Some (store_vector (store I) y))"
+       = (store_and_heap I x = Some (store_vector (store I) y))"
 proof
   assume "evaluation I (points_to x y)"
   hence "evaluation I (sl_conj (sl_mapsto x y) true)"
@@ -79,7 +79,8 @@ next
   assume asm: "(store_and_heap I x = Some (store_vector (store I) y))"
   define h1 where "h1 = add_to_heap h_empty (store I x) (store_vector (store I) y)"
   define h2 where "h2 = remove_from_heap (heap I) (store I x)"
-  have res:"(union_heaps h1 h2 = heap I) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
+  have dijsoint_heaps_from_h:"(union_heaps h1 h2 = heap I) \<and> (disjoint_heaps h1 h2)"
+    unfolding h1_def h2_def
     by (metis asm disjoint_add_remove_element dom_store_and_heap store_and_heap_def 
         union_add_remove_element)
   hence "evaluation (to_interp (store I) h1) (sl_mapsto x y)" unfolding h1_def
@@ -88,25 +89,48 @@ next
   moreover have "evaluation (to_interp (store I) h2) (true)"
     by simp
   ultimately show "evaluation I (points_to x y)"
-    by (metis evaluation.simps(9) points_to_def res)
+    by (metis evaluation.simps(9) points_to_def dijsoint_heaps_from_h)
 qed
 
 lemma tf_prop_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
   shows "(evaluation I (alloc x)) 
-     \<longleftrightarrow> store I x \<in> (h_dom (heap I))"
+       = ((store I) x \<in> (h_dom (heap I)))"
 proof
   assume "evaluation I (alloc x)"
-  thus "store I x \<in> (h_dom (heap I))"
+  show "(store I) x \<in> (h_dom (heap I))"
+  proof (rule ccontr)
+    assume asm:"(store I) x \<notin> (h_dom (heap I))"
+    define h_L::"('addr, 'k) heaps" where "h_L = add_to_heap h_empty (store I x) (vec (store I x))"
+    have "h_dom h_L = {store I x}"
+      by (simp add: h_L_def h_dom_add_not_contained_element h_dom_empty_heap)
+    hence "disjoint_heaps (heap I) h_L"
+      by (simp add: asm disjoint_heaps_def)
+    define h1 where "h1 = union_heaps (heap I) h_L"
+     "evaluation (to_interp (store I) h1) false"
+    
 
+
+(*
+  hence inta: "\<nexists>h1. (disjoint_heaps h1 (heap I)) 
+                 \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x (vec x)))"
+    by (simp add: alloc_def)
+  define h_L where "h_L = restricted_heap (heap I) ((store I) x)"
+  have "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))" unfolding h_L_def
+*)
+(*
+  have "\<not>(disjoint_heaps (heap I) h_L)" unfolding h_L_def using inta
+
+  thus "store I x \<in> (h_dom (heap I))"
+*)
 oops
 
 lemma tf_prop_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and n::enat
-  shows "evaluation I (ext_card_heaps_superior_to n)
-    \<longleftrightarrow> card_heaps (heap I) \<ge> n"
+  shows "(evaluation I (ext_card_heaps_superior_to n))
+       = (card_heaps (heap I) \<ge> n)"
 proof
   assume "evaluation I (ext_card_heaps_superior_to n)"
   thus "card_heaps (heap I) \<ge> n"

@@ -44,13 +44,13 @@ definition to_interp :: "('var \<Rightarrow> 'addr) \<Rightarrow> (('addr, 'k) h
   where "to_interp s h = (s, h)"
 
 
-subsection {* Get from Heap *}
+subsection {* Get Elements from an Heap *}
 
 definition get_from_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) vec option"
   where "get_from_heap h x = Rep_heaps h x"
 
 
-subsection {* Consecutive Store and Heap on a variable *}
+subsection {* Consecutive Store and Heap on a Variable *}
 
 definition store_and_heap :: "('var, 'addr, 'k) interp \<Rightarrow> 'var => ('addr, 'k) vec option"
   where "store_and_heap I x = get_from_heap (heap I) ((store I) x)"
@@ -69,6 +69,12 @@ definition remove_from_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarr
 
 definition add_to_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) vec \<Rightarrow> ('addr, 'k) heaps"
   where "add_to_heap h x y = Abs_heaps ((Rep_heaps h) (x := Some y))"
+
+
+subsection {* Heap Restriction *}
+
+definition restricted_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) heaps"
+  where "restricted_heap h x = Abs_heaps ((\<lambda>x. None)(x := get_from_heap h x))"
 
 
 subsection {* Heaps Operations *}
@@ -241,6 +247,22 @@ lemma get_from_add_to_heap:
     and y::"('addr, 'k) vec"
   shows "get_from_heap (add_to_heap h_empty x y) x = Some y"
   by (simp add: Abs_heaps_inverse a_heap_def add_to_heap_def get_from_heap_def h_empty_def)
-    
+
+lemma dom_restricted_heap:
+  fixes h::"('addr, 'k) heaps"
+    and x::'addr
+  assumes "x \<in> h_dom h"
+  shows "h_dom (restricted_heap h x) = {x}"
+proof -
+  have f1: "\<forall>f z a. ((z::('addr, 'k) vec option) = None \<or> a_heap (f(a::'addr := z))) \<or> infinite (insert a {a. f a \<noteq> None})"
+    by (metis a_heap_def dom_def dom_fun_upd)
+  have "Rep_heaps h x \<noteq> None"
+    using assms h_dom_def by fastforce
+  then have "{a. (Map.empty(x := Rep_heaps h x)) a \<noteq> None} = {x} \<and> a_heap (Map.empty(x := Rep_heaps h x))"
+    using f1 by force
+  then show ?thesis
+    by (simp add: Abs_heaps_inverse get_from_heap_def h_dom_def restricted_heap_def)
+qed
+
 
 end
