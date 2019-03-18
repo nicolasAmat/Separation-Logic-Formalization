@@ -70,20 +70,26 @@ proof
     by (metis evaluation.simps(8) heap_on_to_interp singletonI store_on_to_interp sub_heap_included)
   hence "store_and_heap I x = store_and_heap (to_interp (store I) h1) x"
     by (metis (no_types, lifting) Abs_heaps_inverse Rep_heaps a_heap_def 
-        commutative_union_disjoint_heaps def_0 dom_map_add evaluation.simps(8) finite_Un 
-        heap_on_to_interp map_add_find_right mem_Collect_eq store_and_heap_def store_on_to_interp 
-        union_heaps_def)
+        commutative_union_disjoint_heaps def_0 dom_map_add evaluation.simps(8) 
+        finite_Un heap_on_to_interp map_add_find_right mem_Collect_eq store_on_to_interp 
+        store_and_heap_with_Rep_heaps union_heaps_def)
   thus "(store_and_heap I x = Some (store_vector (store I) y))"
     by (metis def_0 evaluation.simps(8) store_on_to_interp)
 next
-  assume "(store_and_heap I x = Some (store_vector (store I) y))"
-  define h1 where "h1 = h_singleton (store I x) (store_vector (store I) y)"
+  assume asm: "(store_and_heap I x = Some (store_vector (store I) y))"
+  define h1 where "h1 = add_to_heap h_empty (store I x) (store_vector (store I) y)"
   define h2 where "h2 = remove_from_heap (heap I) (store I x)"
-  have "(union_heaps h1 h2 = heap I) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
-   
-                
-thus "evaluation I (points_to x y)"
-oops
+  have res:"(union_heaps h1 h2 = heap I) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
+    by (metis asm disjoint_add_remove_element dom_store_and_heap store_and_heap_def 
+        union_add_remove_element)
+  hence "evaluation (to_interp (store I) h1) (sl_mapsto x y)" unfolding h1_def
+    by (simp add: get_from_add_to_heap h_dom_add_not_contained_element h_dom_empty_heap 
+                  heap_on_to_interp store_and_heap_h store_on_to_interp)
+  moreover have "evaluation (to_interp (store I) h2) (true)"
+    by simp
+  ultimately show "evaluation I (points_to x y)"
+    by (metis evaluation.simps(9) points_to_def res)
+qed
 
 lemma tf_prop_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -106,5 +112,17 @@ proof
   thus "card_heaps (heap I) \<ge> n"
 oops
 
+
+(*DRAFT *)
+(*  have "union_heaps h1 h2 = heap I" unfolding h1_def h2_def 
+    proof (rule union_add_remove_element)
+      show "get_from_heap (heap I) (store I x) = Some (store_vector (store I) y)" using asm unfolding store_and_heap_def
+        by auto
+    next
+      show "(store I) x \<in> h_dom (heap I)"
+        by (simp add: asm dom_store_and_heap)
+    qed
+  moreover have "disjoint_heaps h1 h2" unfolding h1_def h2_def
+    by (metis asm disjoint_add_remove_element dom_store_and_heap store_and_heap_def)*)
 
 end
