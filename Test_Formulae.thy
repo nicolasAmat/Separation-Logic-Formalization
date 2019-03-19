@@ -100,7 +100,7 @@ lemma tf_prop_2:
 proof
   assume "evaluation I (alloc x)"
   thus "(store I) x \<in> (h_dom (heap I))"
-  proof (rule rev_notE)
+proof (rule rev_notE)
     let ?P = "evaluation I (alloc x)"
     assume asm: "(store I) x \<notin> (h_dom (heap I))"
     define h_L::"('addr, 'k) heaps" where "h_L = add_to_heap h_empty (store I x) (store_vector (store I) (vec x))"
@@ -108,32 +108,24 @@ proof
       by (simp add: h_L_def h_dom_add_not_contained_element h_dom_empty_heap)
     moreover have "store_and_heap (to_interp (store I) h_L) x = Some (store_vector (store I) (vec x))"
       by (simp add: get_from_add_to_heap h_L_def store_and_heap_h)
-    ultimately have "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))"
+    ultimately have evl_mapsto: "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))"
       by (simp add: heap_on_to_interp store_on_to_interp)
     have "disjoint_heaps (heap I) h_L"
       by (simp add: asm disjoint_heaps_def dom_h_L)
-    have "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))" unfolding h_L_def
-      using \<open>evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))\<close> h_L_def by blast
+    have "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))"
+      using evl_mapsto by blast
     define h1 where "h1 = union_heaps (heap I) h_L"
-    have "\<not>(evaluation (to_interp (store I) h1) false)" unfolding h1_def
+    have "\<not>(evaluation (to_interp (store I) h1) false)"
       by simp
     thus "\<not>(evaluation I (alloc x))" unfolding alloc_def
-      using \<open>evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))\<close> asm disjoint_heaps_def dom_h_L by fastforce
+      using evl_mapsto asm disjoint_heaps_def dom_h_L by fastforce
   qed
+next
+  assume "(store I) x \<in> (h_dom (heap I))"
+  thus "evaluation I (alloc x)"
+    by (simp add: alloc_def disjoint_heaps_def heap_on_to_interp store_on_to_interp)
+qed
 
-(*
-  hence inta: "\<nexists>h1. (disjoint_heaps h1 (heap I)) 
-                 \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x (vec x)))"
-    by (simp add: alloc_def)
-  define h_L where "h_L = restricted_heap (heap I) ((store I) x)"
-  have "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))" unfolding h_L_def
-*)
-(*
-  have "\<not>(disjoint_heaps (heap I) h_L)" unfolding h_L_def using inta
-
-  thus "store I x \<in> (h_dom (heap I))"
-*)
-oops
 
 lemma tf_prop_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -145,17 +137,5 @@ proof
   thus "card_heaps (heap I) \<ge> n"
 oops
 
-
-(*DRAFT *)
-(*  have "union_heaps h1 h2 = heap I" unfolding h1_def h2_def 
-    proof (rule union_add_remove_element)
-      show "get_from_heap (heap I) (store I x) = Some (store_vector (store I) y)" using asm unfolding store_and_heap_def
-        by auto
-    next
-      show "(store I) x \<in> h_dom (heap I)"
-        by (simp add: asm dom_store_and_heap)
-    qed
-  moreover have "disjoint_heaps h1 h2" unfolding h1_def h2_def
-    by (metis asm disjoint_add_remove_element dom_store_and_heap store_and_heap_def)*)
 
 end
