@@ -27,15 +27,15 @@ definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
 
 subsection {* Cardinality Constraint *}
 
-primrec card_heaps_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
+primrec card_heap_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
-      "card_heaps_superior_to (Suc n) = sl_conj (card_heaps_superior_to n) (not sl_emp)"
-    | "card_heaps_superior_to 0 = true"
+      "card_heap_superior_to (Suc n) = sl_conj (card_heap_superior_to n) (not sl_emp)"
+    | "card_heap_superior_to 0 = true"
 
-primrec ext_card_heaps_superior_to ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
+primrec ext_card_heap_superior_to ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where
-      "ext_card_heaps_superior_to \<infinity> = false"
-    | "ext_card_heaps_superior_to n = card_heaps_superior_to n"
+      "ext_card_heap_superior_to \<infinity> = false"
+    | "ext_card_heap_superior_to n = card_heap_superior_to n"
 
 
 subsection {* Inductive Set *}
@@ -44,7 +44,7 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
   where
     "(points_to x y) \<in> test_formulae"
   | "(alloc x) \<in> test_formulae"
-  | "(ext_card_heaps_superior_to n) \<in> test_formulae"
+  | "(ext_card_heap_superior_to n) \<in> test_formulae"
   | "tf \<in> test_formulae \<Longrightarrow> (not tf) \<in> test_formulae"
   | "tf1 \<in> test_formulae \<and> tf2 \<in> test_formulae \<Longrightarrow> (conj tf1 tf2) \<in> test_formulae"
 
@@ -126,16 +126,34 @@ next
     by (simp add: alloc_def disjoint_heaps_def heap_on_to_interp store_on_to_interp)
 qed
 
-
 lemma tf_prop_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and n::enat
-  shows "(evaluation I (ext_card_heaps_superior_to n))
-       = (card_heaps (heap I) \<ge> n)"
+  shows "(evaluation I (ext_card_heap_superior_to n))
+       = (card_heap (heap I) \<ge> n)"
 proof
-  assume "evaluation I (ext_card_heaps_superior_to n)"
-  thus "card_heaps (heap I) \<ge> n"
-oops
+  assume "evaluation I (ext_card_heap_superior_to n)"
+  thus "card_heap (heap I) \<ge> n"
+  proof (induction n)
+    case (enat nat)
+    then show ?case
+    proof (induction nat)
+      case 0
+      then show ?case
+        using zero_enat_def by auto 
+    next
+      case (Suc nat)
+      then show ?case
+    qed
+  next
+    case infinity
+    then show ?case sorry
+  qed
+next
+  assume "card_heap (heap I) \<ge> n"
+  thus "evaluation I (ext_card_heap_superior_to n)"
+    sorry
+  oops
 
 
 end
