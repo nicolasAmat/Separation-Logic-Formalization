@@ -143,12 +143,12 @@ proof
         using zero_enat_def by auto 
     next
       case (Suc nat)
+      assume "evaluation I (ext_card_heap_superior_to (enat (Suc nat)))"
+      have "evaluation I (sl_conj (card_heap_superior_to nat) (not sl_emp))"
+        using Suc.prems by auto
+      have ""
       then show ?case
-    qed
-  next
-    case infinity
-    then show ?case sorry
-  qed
+   qed
 next
   assume "card_heap (heap I) \<ge> n"
   thus "evaluation I (ext_card_heap_superior_to n)"
