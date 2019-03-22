@@ -8,8 +8,8 @@ text {* This section contains the logical consequence and the equivalence. *}
 
 theory Formula_Relation
 imports
-    Interpretation
-    Formula
+  Interpretation
+  Formula
 begin
 
 

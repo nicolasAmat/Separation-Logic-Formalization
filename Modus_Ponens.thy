@@ -8,8 +8,8 @@ text {* This section contains the Modus Ponens like for the sepration logic. *}
 
 theory Modus_Ponens
 imports  
-    Interpretation
-    Formula
+  Interpretation
+  Formula
 begin
 
 

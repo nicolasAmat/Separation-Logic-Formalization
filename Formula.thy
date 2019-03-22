@@ -8,7 +8,7 @@ text {* This section contains the syntax and semantics formalization of the sepa
 
 theory Formula
 imports 
-    Interpretation
+  Interpretation
 begin
 
 

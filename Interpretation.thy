@@ -8,9 +8,9 @@ text {* This section contains the formalization of an interpretations in the sep
 
 theory Interpretation
 imports 
-    "HOL.Map" 
-    "HOL-Analysis.Finite_Cartesian_Product"
-    "HOL-Library.Extended_Nat"
+  "HOL.Map" 
+  "HOL-Analysis.Finite_Cartesian_Product"
+  "HOL-Library.Extended_Nat"
 begin
 
 
@@ -262,6 +262,31 @@ proof -
     using f1 by force
   then show ?thesis
     by (simp add: Abs_heaps_inverse get_from_heap_def h_dom_def restricted_heap_def)
+qed
+
+lemma empty_heap_h_empty:
+  "empty_heap h_empty"
+  using empty_heap_def h_dom_def h_dom_empty_heap by fastforce
+
+lemma card_empty_heap:
+  "card_heap h_empty = 0"
+proof -
+  have "card (h_dom h_empty) = 0"
+    by (simp add: h_dom_empty_heap)
+  thus "card_heap h_empty = 0"
+    by (simp add: card_heap_def zero_enat_def)
+qed
+
+lemma card_not_empty_heap:
+  fixes h::"('addr, 'k) heaps"
+  assumes "\<not>(empty_heap h)"
+  shows "card_heap h \<ge> 1"
+proof -
+  have "card (h_dom h) \<ge> 1"
+    by (metis (mono_tags) One_nat_def Rep_heaps Suc_leI a_heap_def assms card_0_eq dom_def 
+        empty_heap_def empty_iff h_dom_def mem_Collect_eq neq0_conv)
+  thus "card_heap h \<ge> 1"
+    by (simp add: card_heap_def one_enat_def)
 qed
 
 

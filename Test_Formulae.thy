@@ -8,8 +8,8 @@ text {* This section contains test formulae. *}
 
 theory Test_Formulae
 imports
-    Formula
-    "HOL-Library.Extended_Nat"
+  Formula
+  "HOL-Library.Extended_Nat"
 begin
 
 
@@ -146,8 +146,18 @@ proof
       assume "evaluation I (ext_card_heap_superior_to (enat (Suc nat)))"
       have "evaluation I (sl_conj (card_heap_superior_to nat) (not sl_emp))"
         using Suc.prems by auto
-      have ""
+      from this obtain h1 h2 
+        where def_0: "(disjoint_heaps h1 h2)
+                    \<and> (union_heaps h1 h2 = heap I)
+                    \<and> (evaluation (to_interp (store I) h1) (card_heap_superior_to nat))
+                    \<and> (evaluation (to_interp (store I) h2) (not sl_emp))"
+        using evaluation.simps(9) by blast
+      have "card_heap h2 \<ge> 1" 
+        using def_0 by (simp add: card_not_empty_heap heap_on_to_interp)
+      have "card_heap h1 \<ge> nat"
+        sorry
       then show ?case
+        sorry
    qed
 next
   assume "card_heap (heap I) \<ge> n"
