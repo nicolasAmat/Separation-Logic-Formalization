@@ -134,18 +134,20 @@ lemma tf_prop_3:
 proof
   assume "evaluation I (ext_card_heap_superior_to n)"
   thus "card_heap (heap I) \<ge> n"
-  proof (induction n)
+  proof (induct n)
     case (enat nat)
     then show ?case
-    proof (induction nat)
+    proof (induct nat)
       case 0
       then show ?case
         using zero_enat_def by auto 
     next
       case (Suc nat)
-      assume "evaluation I (ext_card_heap_superior_to (enat (Suc nat)))"
+      assume hyp:"(evaluation I (ext_card_heap_superior_to nat))
+           \<longrightarrow>(card_heap (heap I) \<ge> nat)"
+      assume prem:"evaluation I (ext_card_heap_superior_to (enat (Suc nat)))"
       have "evaluation I (sl_conj (card_heap_superior_to nat) (not sl_emp))"
-        using Suc.prems by auto
+        using \<open>evaluation I (ext_card_heap_superior_to (enat (Suc nat)))\<close> by auto
       from this obtain h1 h2 
         where def_0: "(disjoint_heaps h1 h2)
                     \<and> (union_heaps h1 h2 = heap I)
@@ -153,17 +155,23 @@ proof
                     \<and> (evaluation (to_interp (store I) h2) (not sl_emp))"
         using evaluation.simps(9) by blast
       have "card_heap h2 \<ge> 1" 
-        using def_0 by (simp add: card_not_empty_heap heap_on_to_interp)
-      have "card_heap h1 \<ge> nat"
-        sorry
+        using def_0
+        by (simp add: card_not_empty_heap heap_on_to_interp) 
+      have "card_heap h1 \<ge> nat" using hyp def_0
+      proof  -
+          have "evaluation (to_interp (store I) h1) (card_heap_superior_to nat)"
+            using def_0 by blast
+          hence "evaluation (to_interp (store I) h1) (ext_card_heap_superior_to  nat)"
+            by simp
+          hence "card_heap (heap (to_interp (store I) h1)) \<ge> nat" using hyp def_0 heap_on_to_interp
+         (* bloqué : I don't know why *)
       then show ?case
-        sorry
-   qed
+        sorry  
 next
   assume "card_heap (heap I) \<ge> n"
   thus "evaluation I (ext_card_heap_superior_to n)"
-    sorry
+  proof (induction n)
   oops
-
+      *)
 
 end
