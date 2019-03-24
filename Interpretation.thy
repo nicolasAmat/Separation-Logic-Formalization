@@ -289,5 +289,28 @@ proof -
     by (simp add: card_heap_def one_enat_def)
 qed
 
+lemma card_union_disjoint_heaps:
+  fixes h1::"('addr, 'k) heaps"
+    and h2::"('addr, 'k) heaps"
+  assumes "disjoint_heaps h1 h2" 
+    and "card_heap h1 \<ge> n"
+    and "card_heap h2 \<ge> m"
+  shows "card_heap (union_heaps h1 h2) \<ge> (n + m)"
+proof -
+  have disjoint_def:"h_dom h1 \<inter> h_dom h2 = {}"
+    by (meson assms(1) disjoint_heaps_def)
+  hence "h_dom (union_heaps h1 h2) = (h_dom h1) \<union> (h_dom h2)"
+    by (metis Abs_heaps_inverse Rep_heaps a_heap_def dom_def dom_map_add h_dom_def infinite_Un 
+        map_add_comm mem_Collect_eq union_heaps_def)
+  hence "card_heap (union_heaps h1 h2) = card ((h_dom h1) \<union> (h_dom h2))"
+    by (simp add: card_heap_def)
+  hence "card_heap (union_heaps h1 h2) = card (h_dom h1) + card(h_dom h2) - card(h_dom h1 \<inter> h_dom h2)"
+    by (metis Rep_heaps a_heap_def add_diff_cancel_right' card_Un_Int dom_def h_dom_def mem_Collect_eq)
+  hence "card_heap (union_heaps h1 h2) = card_heap h1 + card_heap h2"
+    by (simp add: card_heap_def disjoint_def)
+  thus "card_heap (union_heaps h1 h2) \<ge> (n + m)"
+    by (simp add: add_mono assms(2) assms(3))
+qed
+
 
 end
