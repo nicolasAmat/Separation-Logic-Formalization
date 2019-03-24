@@ -134,37 +134,44 @@ lemma tf_prop_3:
 proof
   assume "evaluation I (ext_card_heap_superior_to n)"
   thus "card_heap (heap I) \<ge> n"
-  proof (induct n)
+  proof (induct n arbitrary: I)
     case (enat nat)
     then show ?case
-    proof (induct nat)
+    proof (induct nat arbitrary: I)
       case 0
       then show ?case
         using zero_enat_def by auto 
     next
       case (Suc nat)
-      assume hyp: "\<And>I::('var,'addr,'k) interp. (evaluation I (ext_card_heap_superior_to nat))
-                \<Longrightarrow>(card_heap (heap I) \<ge> nat)"
-      assume prem: "evaluation I (ext_card_heap_superior_to (enat (Suc nat)))"
       have "evaluation I (sl_conj (card_heap_superior_to nat) (not sl_emp))"
-        using \<open>evaluation I (ext_card_heap_superior_to (enat (Suc nat)))\<close> by auto
+        using Suc.prems by simp
       from this obtain h1 h2 
         where def_0: "(disjoint_heaps h1 h2)
                     \<and> (union_heaps h1 h2 = heap I)
                     \<and> (evaluation (to_interp (store I) h1) (card_heap_superior_to nat))
                     \<and> (evaluation (to_interp (store I) h2) (not sl_emp))"
         using evaluation.simps(9) by blast
-      have "card_heap h1 \<ge> nat" 
-        using hyp def_0 by (metis ext_card_heap_superior_to.simps(2) heap_on_to_interp)
+      hence "evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
+        by simp
+      hence "card_heap h1 \<ge> nat" 
+        using Suc.hyps Suc.prems by (metis heap_on_to_interp) 
       moreover have "card_heap h2 \<ge> 1" 
-        using def_0 by (simp add: card_not_empty_heap heap_on_to_interp) 
+        using def_0 by (simp add: card_not_empty_heap heap_on_to_interp)  
       ultimately have "card_heap (union_heaps h1 h2) \<ge> (Suc nat)" using def_0
         by (metis add.commute card_union_disjoint_heaps of_nat_Suc of_nat_eq_enat)
       then show ?case
+        by (simp add: def_0)
+    qed
+  next
+    case infinity
+    then show ?case
+      by simp
+  qed
 next
   assume "card_heap (heap I) \<ge> n"
   thus "evaluation I (ext_card_heap_superior_to n)"
   proof (induction n)
     oops
+
 
 end
