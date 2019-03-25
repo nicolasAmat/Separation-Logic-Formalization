@@ -77,15 +77,15 @@ proof
     by (metis def_0 evaluation.simps(8) store_on_to_interp)
 next
   assume asm: "(store_and_heap I x = Some (store_vector (store I) y))"
-  define h1 where "h1 = add_to_heap h_empty (store I x) (store_vector (store I) y)"
+  define h1 where "h1 = h_singleton (store I x) (store_vector (store I) y)"
   define h2 where "h2 = remove_from_heap (heap I) (store I x)"
   have dijsoint_heaps_from_h:"(union_heaps h1 h2 = heap I) \<and> (disjoint_heaps h1 h2)"
     unfolding h1_def h2_def
-    by (metis asm disjoint_add_remove_element dom_store_and_heap store_and_heap_def 
-        union_add_remove_element)
+    by (metis asm disjoint_add_remove_element dom_store_and_heap h_singleton_add_to_heap 
+        store_and_heap_def union_add_remove_element)
   hence "evaluation (to_interp (store I) h1) (sl_mapsto x y)" unfolding h1_def
     by (simp add: get_from_add_to_heap h_dom_add_not_contained_element h_dom_empty_heap 
-                  heap_on_to_interp store_and_heap_h store_on_to_interp)
+                  heap_on_to_interp store_and_heap_h store_on_to_interp h_singleton_add_to_heap)
   moreover have "evaluation (to_interp (store I) h2) (true)"
     by simp
   ultimately show "evaluation I (points_to x y)"
@@ -179,7 +179,27 @@ next
         by simp 
     next
       case (Suc nat)
-      then show ?case sorry
+      then show ?case
+      proof -
+        have "h_dom (heap I) \<noteq> {}"
+          by (metis Suc.prems card_empty card_heap_def enat_0_iff(1) ile0_eq old.nat.distinct(2))
+        from this obtain l where l_def: "l \<in> h_dom (heap I)"
+          by blast
+        define h1::"('addr, 'k) heaps" where "h1 = remove_from_heap (heap I) l"
+        define h2::"('addr, 'k) heaps" where "h2 = restricted_heap (heap I) l"
+        have "heap I = (union_heaps h1 h2) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
+          by (simp add: disjoint_remove_from_heap_restricted_heap l_def 
+              union_remove_from_heap_restricted_heap)
+        hence "card_heap h1 \<ge> nat" unfolding h1_def using Suc.prems l_def
+          by (simp add: card_remove_from_heap)
+        hence 1:"evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
+          by (metis Suc.IH heap_on_to_interp)
+        have "h_dom h2 \<noteq> {}" unfolding h2_def
+          by (simp add: dom_restricted_heap l_def)
+        hence "evaluation (to_interp (store I) h2) (not sl_emp)"
+
+        from 1 and 2 show ?case
+
     qed
   next
     case infinity
