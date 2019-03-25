@@ -144,7 +144,7 @@ proof
     next
       case (Suc nat)
       have "evaluation I (sl_conj (card_heap_superior_to nat) (not sl_emp))"
-        using Suc.prems by simp
+        using Suc.prems by auto 
       from this obtain h1 h2 
         where def_0: "(disjoint_heaps h1 h2)
                     \<and> (union_heaps h1 h2 = heap I)
@@ -153,8 +153,8 @@ proof
         using evaluation.simps(9) by blast
       hence "evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
         by simp
-      hence "card_heap h1 \<ge> nat" 
-        using Suc.hyps Suc.prems by (metis heap_on_to_interp) 
+      hence "card_heap h1 \<ge> nat"
+        by (metis Suc.hyps heap_on_to_interp) 
       moreover have "card_heap h2 \<ge> 1" 
         using def_0 by (simp add: card_not_empty_heap heap_on_to_interp)  
       ultimately have "card_heap (union_heaps h1 h2) \<ge> (Suc nat)" using def_0
@@ -170,8 +170,21 @@ proof
 next
   assume "card_heap (heap I) \<ge> n"
   thus "evaluation I (ext_card_heap_superior_to n)"
-  proof (induction n)
-    oops
+  proof (induction n arbitrary : I)
+    case (enat nat)
+    then show ?case
+    proof (induction nat arbitrary : I)
+      case 0
+      then show ?case
+        by simp 
+    next
+      case (Suc nat)
+      then show ?case sorry
+    qed
+  next
+    case infinity
+    then show ?case sorry
+  qed
 
 
 end
