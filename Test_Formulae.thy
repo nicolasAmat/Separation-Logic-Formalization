@@ -26,9 +26,7 @@ definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
 
 
 subsection {* Cardinality Constraint *}
-datatype ('var, 'k) literal =
-    Pos "('var, 'k) sl_formula"
-  | Neg "('var, 'k) sl_formula"
+
 primrec card_heap_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
       "card_heap_superior_to (Suc n) = sl_conj (card_heap_superior_to n) (not sl_emp)"
@@ -219,9 +217,8 @@ qed
 
 subsection {* Literal *}
 
-datatype ('var, 'k) literal =
-    Pos "('var, 'k) sl_formula"
-  | Neg "('var, 'k) sl_formula"
+definition literal :: "('var, 'k::finite) sl_formula \<Rightarrow> bool"
+  where "literal f = ((f \<in> test_formulae) \<or> (not f \<in> test_formulae))"
 
 
 end
