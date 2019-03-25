@@ -45,8 +45,7 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
     "(points_to x y) \<in> test_formulae"
   | "(alloc x) \<in> test_formulae"
   | "(ext_card_heap_superior_to n) \<in> test_formulae"
-  | "tf \<in> test_formulae \<Longrightarrow> (not tf) \<in> test_formulae"
-  | "tf1 \<in> test_formulae \<and> tf2 \<in> test_formulae \<Longrightarrow> (conj tf1 tf2) \<in> test_formulae"
+  | "(eq x y) \<in> test_formulae"
 
 
 subsection {* Propositions *}
@@ -217,8 +216,15 @@ qed
 
 subsection {* Literal *}
 
-definition literal :: "('var, 'k::finite) sl_formula \<Rightarrow> bool"
-  where "literal f = ((f \<in> test_formulae) \<or> (not f \<in> test_formulae))"
+typedef ('var, 'k::finite) literal 
+  = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae}"
+  using test_formulae.intros(3) by force
+
+definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) sl_formula"
+  where "to_sl_formula f = Rep_literal f"
+
+definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) literal"
+  where "to_literal f = Abs_literal f"
 
 
 end

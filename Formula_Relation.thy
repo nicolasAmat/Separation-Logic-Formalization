@@ -12,17 +12,29 @@ imports
   Formula
 begin
 
-
+(*
 subsection {* Logical Consequence *}
 
-definition logical_consequence :: "'addr \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool" 
+definition logical_consequence :: "'addr \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) sl_formula \<Rightarrow> bool" 
   where "logical_consequence addr f g = (\<forall>I::('var, 'addr, 'k) interp. (evaluation I f) \<longrightarrow> (evaluation I g))"
 
 
 subsection {* Equivalence *}
 
-definition equivalence :: "'addr \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool" 
+definition equivalence :: "'addr \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) sl_formula \<Rightarrow> bool" 
   where "equivalence addr f g = ((logical_consequence addr f g) \<and> (logical_consequence addr g f))"
+*)
 
+
+subsection {* Logical Consequence *}
+
+definition logical_consequence :: "'addr set \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) sl_formula \<Rightarrow> bool" 
+  where "logical_consequence env f g = (\<forall>I::('var, 'addr, 'k) interp. (evaluation I f) \<longrightarrow> (evaluation I g))"
+
+
+subsection {* Equivalence *}
+
+definition equivalence :: "'addr set \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) sl_formula \<Rightarrow> bool" 
+  where "equivalence env f g = ((logical_consequence env f g) \<and> (logical_consequence env g f))"
 
 end
