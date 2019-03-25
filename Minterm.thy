@@ -13,14 +13,18 @@ imports
 begin
 
 
-subsection {* Definition *}
+subsection {* Minterms Definition *}
 
 typedef ('var, 'addr, 'k::finite) minterm 
-  = "{S. (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. (equivalence (UNIV::'addr set) (to_sl_formula l) (ext_card_heap_superior_to n)))}"
-proof 
-  define x::"('var, 'k::finite) literal set" where "x = {to_literal (ext_card_heap_superior_to 0)}"
-  show "x\<in>{S. \<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (ext_card_heap_superior_to n))} "
-  proof
+  = "{S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+          (equivalence (UNIV::'addr set) (to_sl_formula l) (ext_card_heap_superior_to n)))
+        \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+          (equivalence (UNIV::'addr set) (to_sl_formula l) (not (ext_card_heap_superior_to n)))))}"
+proof
+  define x::"('var, 'k::finite) literal set" 
+    where "x = {to_literal (ext_card_heap_superior_to 0), to_literal (not (ext_card_heap_superior_to 0))}"
+  show "x\<in>{S. (\<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (ext_card_heap_superior_to n))) 
+            \<and> (\<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (not (ext_card_heap_superior_to n))))}"
 oops
 
 (*
@@ -37,5 +41,6 @@ definition e_minterm
 - si minterm \<Rightarrow> b
 - si a et b \<Rightarrow> mintern
 *)
+
 
 end
