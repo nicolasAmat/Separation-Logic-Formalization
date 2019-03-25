@@ -179,28 +179,25 @@ next
         by simp 
     next
       case (Suc nat)
-      then show ?case
-      proof -
-        have "h_dom (heap I) \<noteq> {}"
-          by (metis Suc.prems card_empty card_heap_def enat_0_iff(1) ile0_eq old.nat.distinct(2))
-        from this obtain l where l_def: "l \<in> h_dom (heap I)"
-          by blast
-        define h1::"('addr, 'k) heaps" where "h1 = remove_from_heap (heap I) l"
-        define h2::"('addr, 'k) heaps" where "h2 = restricted_heap (heap I) l"
-        have h_res: "heap I = (union_heaps h1 h2) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
-          by (simp add: disjoint_remove_from_heap_restricted_heap l_def 
-              union_remove_from_heap_restricted_heap)
-        hence "card_heap h1 \<ge> nat" unfolding h1_def using Suc.prems l_def
-          by (simp add: card_remove_from_heap)
-        hence h1_res:"evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
-          by (metis Suc.IH heap_on_to_interp)
-        have "\<not>(empty_heap h2)" unfolding h2_def
-          by (simp add: l_def restricted_heap_not_empty)
-        hence h2_res:"evaluation (to_interp (store I) h2) (not sl_emp)"
-          by (simp add: heap_on_to_interp)
-        from h_res and h1_res and h2_res show ?case
-          by auto
-      qed
+      have "h_dom (heap I) \<noteq> {}"
+        by (metis Suc.prems card_empty card_heap_def enat_0_iff(1) ile0_eq old.nat.distinct(2))
+      from this obtain l where l_def: "l \<in> h_dom (heap I)"
+        by blast
+      define h1::"('addr, 'k) heaps" where "h1 = remove_from_heap (heap I) l"
+      define h2::"('addr, 'k) heaps" where "h2 = restricted_heap (heap I) l"
+      have h_res: "heap I = (union_heaps h1 h2) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
+        by (simp add: disjoint_remove_from_heap_restricted_heap l_def 
+            union_remove_from_heap_restricted_heap)
+      hence "card_heap h1 \<ge> nat" unfolding h1_def using Suc.prems l_def
+        by (simp add: card_remove_from_heap)
+      hence h1_res:"evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
+        by (metis Suc.IH heap_on_to_interp)
+      have "\<not>(empty_heap h2)" unfolding h2_def
+        by (simp add: l_def restricted_heap_not_empty)
+      hence h2_res:"evaluation (to_interp (store I) h2) (not sl_emp)"
+        by (simp add: heap_on_to_interp)
+      from h_res and h1_res and h2_res show ?case
+        by auto
     qed
   next
     case infinity
