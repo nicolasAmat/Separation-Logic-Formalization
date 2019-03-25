@@ -202,7 +202,7 @@ next
   next
     case infinity
     then show ?case
-      using less_le_not_le card_heap_inf_infty by blast    
+      by (simp add: card_heap_def)   
   qed
 qed
 
