@@ -350,5 +350,22 @@ proof -
     by (simp add: card_heap_def one_enat_def)
 qed
 
+lemma restricted_heap_not_empty:
+  fixes h::"('addr, 'k) heaps"
+    and x::'addr
+  assumes "x \<in> h_dom h"
+  shows "\<not>(empty_heap (restricted_heap h x))"
+  proof -
+  have "Rep_heaps (restricted_heap h x) \<noteq> Map.empty"
+    by (metis (no_types) Rep_heaps_inverse assms dom_restricted_heap empty_not_insert h_dom_empty_heap h_empty_def)
+    then show ?thesis
+      by (simp add: empty_heap_def)
+  qed
+
+lemma card_heap_inf_infty:
+  fixes h::"('addr, 'k) heaps"
+  shows "card_heap h <  \<infinity>"
+  by (simp add: card_heap_def)
+
 
 end

@@ -187,24 +187,27 @@ next
           by blast
         define h1::"('addr, 'k) heaps" where "h1 = remove_from_heap (heap I) l"
         define h2::"('addr, 'k) heaps" where "h2 = restricted_heap (heap I) l"
-        have "heap I = (union_heaps h1 h2) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
+        have h_res: "heap I = (union_heaps h1 h2) \<and> (disjoint_heaps h1 h2)" unfolding h1_def h2_def
           by (simp add: disjoint_remove_from_heap_restricted_heap l_def 
               union_remove_from_heap_restricted_heap)
         hence "card_heap h1 \<ge> nat" unfolding h1_def using Suc.prems l_def
           by (simp add: card_remove_from_heap)
-        hence 1:"evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
+        hence h1_res:"evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
           by (metis Suc.IH heap_on_to_interp)
-        have "h_dom h2 \<noteq> {}" unfolding h2_def
-          by (simp add: dom_restricted_heap l_def)
-        hence "evaluation (to_interp (store I) h2) (not sl_emp)"
-
-        from 1 and 2 show ?case
-
+        have "\<not>(empty_heap h2)" unfolding h2_def
+          by (simp add: l_def restricted_heap_not_empty)
+        hence h2_res:"evaluation (to_interp (store I) h2) (not sl_emp)"
+          by (simp add: heap_on_to_interp)
+        from h_res and h1_res and h2_res show ?case
+          by auto
+      qed
     qed
   next
     case infinity
-    then show ?case sorry
+    then show ?case
+      using less_le_not_le card_heap_inf_infty by blast    
   qed
+qed
 
 
 end
