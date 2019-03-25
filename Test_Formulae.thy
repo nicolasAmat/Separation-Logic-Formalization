@@ -26,7 +26,9 @@ definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
 
 
 subsection {* Cardinality Constraint *}
-
+datatype ('var, 'k) literal =
+    Pos "('var, 'k) sl_formula"
+  | Neg "('var, 'k) sl_formula"
 primrec card_heap_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
       "card_heap_superior_to (Suc n) = sl_conj (card_heap_superior_to n) (not sl_emp)"
@@ -50,6 +52,8 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
 
 
 subsection {* Propositions *}
+
+subsubsection {* Proposition 1 *}
 
 lemma tf_prop_1:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -92,6 +96,9 @@ next
     by (metis evaluation.simps(9) points_to_def dijsoint_heaps_from_h)
 qed
 
+
+subsubsection {* Proposition 2 *}
+
 lemma tf_prop_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
@@ -125,6 +132,9 @@ next
   thus "evaluation I (alloc x)"
     by (simp add: alloc_def disjoint_heaps_def heap_on_to_interp store_on_to_interp)
 qed
+
+
+subsubsection {* Proposition 3 *}
 
 lemma tf_prop_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -205,6 +215,13 @@ next
       by (simp add: card_heap_def)   
   qed
 qed
+
+
+subsection {* Literal *}
+
+datatype ('var, 'k) literal =
+    Pos "('var, 'k) sl_formula"
+  | Neg "('var, 'k) sl_formula"
 
 
 end
