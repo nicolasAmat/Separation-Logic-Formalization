@@ -31,14 +31,18 @@ proof
     have "l1 \<in> x"
       by (simp add: l1_def x_def) 
     moreover have "equivalence UNIV (to_sl_formula l1) (ext_card_heap_superior_to 0)" unfolding l1_def
-      
-oops
+      by (simp add: literals_def test_formulae.intros(3) to_sl_formula_to_literal)
+    define l2::"('var, 'k::finite) literal" where "l2 = to_literal (not (ext_card_heap_superior_to 0))"
+    moreover have "l2 \<in> x"
+      by (simp add: l2_def x_def)
+    moreover have "equivalence UNIV (to_sl_formula l2) (not (ext_card_heap_superior_to 0))" unfolding l2_def
+      by (simp add: literals_def test_formulae.intros(3) to_sl_formula_to_literal)
+    ultimately show "(\<exists>!l. l \<in> x \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (ext_card_heap_superior_to n))) 
+                   \<and> (\<exists>!l. l \<in> x \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (not (ext_card_heap_superior_to n))))"  
+      oops
+
 
 (*
-definition minterm :: "'addr set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> bool"
-  where "minterm env S = ((\<exists>!l\<in>S. \<exists>n. (equivalence env (to_sl_formula l) (ext_card_heap_superior_to n)))
-                        \<and> (\<exists>!l\<in>S. \<exists>n. (equivalence env (to_sl_formula l) (not (ext_card_heap_superior_to n)))))"
-
 definition e_minterm
   where ""
 *)
