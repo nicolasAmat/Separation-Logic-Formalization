@@ -22,9 +22,16 @@ typedef ('var, 'addr, 'k::finite) minterm
           (equivalence (UNIV::'addr set) (to_sl_formula l) (not (ext_card_heap_superior_to n)))))}"
 proof
   define x::"('var, 'k::finite) literal set" 
-    where "x = {to_literal (ext_card_heap_superior_to 0), to_literal (not (ext_card_heap_superior_to 0))}"
-  show "x\<in>{S. (\<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (ext_card_heap_superior_to n))) 
-            \<and> (\<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (not (ext_card_heap_superior_to n))))}"
+    where "x = {to_literal (ext_card_heap_superior_to 0), 
+                to_literal (not (ext_card_heap_superior_to 0))}"
+  show "x \<in> {S. (\<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (ext_card_heap_superior_to n))) 
+              \<and> (\<exists>!l. l \<in> S \<and> (\<exists>n. equivalence UNIV (to_sl_formula l) (not (ext_card_heap_superior_to n))))}"
+  proof
+    define l1::"('var, 'k::finite) literal" where "l1 = to_literal (ext_card_heap_superior_to 0)"
+    have "l1 \<in> x"
+      by (simp add: l1_def x_def) 
+    moreover have "equivalence UNIV (to_sl_formula l1) (ext_card_heap_superior_to 0)" unfolding l1_def
+      
 oops
 
 (*

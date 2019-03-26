@@ -9,6 +9,7 @@ text {* This section contains test formulae. *}
 theory Test_Formulae
 imports
   Formula
+  Formula_Relation
   "HOL-Library.Extended_Nat"
 begin
 
@@ -225,6 +226,16 @@ definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k)
 
 definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) literal"
   where "to_literal f = Abs_literal f"
+
+subsubsection {* Useful Literals Results *}
+
+lemma to_sl_formula_to_literal:
+  fixes f::"('var, 'k::finite) sl_formula"
+  assumes "(f \<in> test_formulae) \<or> ((not f) \<in> test_formulae)"
+  shows "equivalence (UNIV::'addr set) (to_sl_formula (to_literal f)) f"
+proof -
+
+  oops
 
 
 end
