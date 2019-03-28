@@ -16,8 +16,8 @@ subsection {* Formulas Syntax *}
 
 datatype ('var, 'k::finite) sl_formula =
   (* Boolean *)
-    true
-  | false
+    sl_true
+  | sl_false
   (* Classical Logic *)
   | eq 'var 'var
   | not "('var, 'k) sl_formula"
@@ -35,8 +35,8 @@ subsection {* Formulas Semantics *}
 
 primrec evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool"
   where 
-    "evaluation I true                = True"
-  | "evaluation I false               = False" 
+    "evaluation I sl_true                = True"
+  | "evaluation I sl_false               = False" 
   | "evaluation I (eq x y)            = ((store I) x = (store I) y)"
   | "evaluation I (not P)             = (\<not>(evaluation I P))"
   | "evaluation I (conj P Q)          = ((evaluation I P) \<and> (evaluation I Q))"

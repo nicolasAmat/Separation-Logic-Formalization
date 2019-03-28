@@ -17,25 +17,25 @@ begin
 subsection {* Points-to Relations in the Heap *}
 
 definition points_to :: "'var \<Rightarrow> ('var, 'k) vec \<Rightarrow> ('var, 'k::finite) sl_formula"
-  where "points_to x y =  sl_conj (sl_mapsto x y) true"
+  where "points_to x y =  sl_conj (sl_mapsto x y) sl_true"
 
 
 subsection {* Allocation *}
 
 definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
-  where "alloc x = sl_magic_wand (sl_mapsto x (vec x)) false"
+  where "alloc x = sl_magic_wand (sl_mapsto x (vec x)) sl_false"
 
 
 subsection {* Cardinality Constraint *}
 
-primrec card_heap_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
+fun card_heap_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
       "card_heap_superior_to (Suc n) = sl_conj (card_heap_superior_to n) (not sl_emp)"
-    | "card_heap_superior_to 0 = true"
+    | "card_heap_superior_to 0 = sl_true"
 
 primrec ext_card_heap_superior_to ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where
-      "ext_card_heap_superior_to \<infinity> = false"
+      "ext_card_heap_superior_to \<infinity> = sl_false"
     | "ext_card_heap_superior_to n = card_heap_superior_to n"
 
 
@@ -61,12 +61,12 @@ lemma tf_prop_1:
        = (store_and_heap I x = Some (store_vector (store I) y))"
 proof
   assume "evaluation I (points_to x y)"
-  hence "evaluation I (sl_conj (sl_mapsto x y) true)"
+  hence "evaluation I (sl_conj (sl_mapsto x y) sl_true)"
     by (simp add: points_to_def)
   from this obtain h1 h2 where def_0: "(union_heaps h1 h2 = heap I) 
                                      \<and> (disjoint_heaps h1 h2) 
                                      \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
-                                     \<and> (evaluation (to_interp (store I) h2) (true))"
+                                     \<and> (evaluation (to_interp (store I) h2) (sl_true))"
     using evaluation.simps(9) by blast
   hence "(store I x \<in> h_dom h1) \<and> (h_dom h1 \<subseteq> h_dom (heap I))"
     by (metis evaluation.simps(8) heap_on_to_interp singletonI store_on_to_interp sub_heap_included)
@@ -88,7 +88,7 @@ next
   hence "evaluation (to_interp (store I) h1) (sl_mapsto x y)" unfolding h1_def
     by (simp add: get_from_add_to_heap h_dom_add_not_contained_element h_dom_empty_heap 
                   heap_on_to_interp store_and_heap_h store_on_to_interp h_singleton_add_to_heap)
-  moreover have "evaluation (to_interp (store I) h2) (true)"
+  moreover have "evaluation (to_interp (store I) h2) (sl_true)"
     by simp
   ultimately show "evaluation I (points_to x y)"
     by (metis evaluation.simps(9) points_to_def dijsoint_heaps_from_h)
@@ -120,7 +120,7 @@ proof (rule rev_notE)
     have "evaluation (to_interp (store I) h_L) (sl_mapsto x (vec x))"
       using evl_mapsto by blast
     define h1 where "h1 = union_heaps (heap I) h_L"
-    have "\<not>(evaluation (to_interp (store I) h1) false)"
+    have "\<not>(evaluation (to_interp (store I) h1) sl_false)"
       by simp
     thus "\<not>(evaluation I (alloc x))" unfolding alloc_def
       using evl_mapsto asm disjoint_heaps_def dom_h_L by fastforce
@@ -230,14 +230,90 @@ definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k)
 definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) literal"
   where "to_literal f = Abs_literal f"
 
+
+
 subsubsection {* Useful Literals Results *}
 
-lemma to_sl_formula_to_literal:
+(*lemma to_sl_formula_to_literal:
   fixes f::"('var, 'k::finite) sl_formula"
   assumes "f \<in> literals"
   shows "equivalence (UNIV::'addr set) (to_sl_formula (to_literal f)) f"
   using literals_def by (metis (mono_tags) Abs_literal_inverse assms equivalence_def 
-                         logical_consequence_def to_literal_def to_sl_formula_def)
+                         logical_consequence_def to_literal_def to_sl_formula_def)*)
+
+lemma pos_literal_inv[simp]:
+  fixes f::"('var, 'k::finite) sl_formula"
+  assumes "f\<in> test_formulae"
+  shows "(to_sl_formula (to_literal f)) = f"
+by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
+
+lemma neg_literal_inv[simp]:
+  fixes f::"('var, 'k::finite) sl_formula"
+  assumes "f\<in> test_formulae"
+  shows "(to_sl_formula (to_literal (not f))) = not f"
+by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
+
+(* TODO *)
+
+definition to_heap::"('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> ('addr, 'k) heaps" where
+"to_heap h = (if (finite (dom h)) then Abs_heaps h else h_empty)"
+
+lemma to_heap_domain:
+  assumes "finite (dom h)"
+  shows "h_dom (to_heap h) = dom h" unfolding h_dom_def dom_def to_heap_def using assms
+  by (simp add: Abs_heaps_inverse a_heap_def dom_def)
+
+
+lemma heap_card_domain_card:
+  fixes A::"'addr set"
+  assumes "finite A" and "n \<le> card A"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_superior_to (enat n))} \<noteq> {}"
+proof -
+  define hfct::"'addr \<Rightarrow> (('addr, 'k) vec) option" where "hfct = (\<lambda> a. (if a\<in> A then (Some (vec a)) else None))"
+  have "dom hfct = A" unfolding hfct_def dom_def by simp
+  define mheap where "mheap = to_heap hfct"
+  have "h_dom mheap = A" using assms to_heap_domain \<open>dom hfct = A\<close> by (metis mheap_def)
+  define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
+  define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
+  define I where "I = to_interp store mheap"
+  have "evaluation I (ext_card_heap_superior_to (enat n))" 
+  proof (rule tf_prop_3[THEN iffD2])
+    have "card_heap (heap I) = card (h_dom mheap)" unfolding card_heap_def unfolding I_def
+      by (simp add: heap_def to_interp_def)
+    also have "... = card A" using \<open>h_dom mheap = A\<close> by simp
+    also have "... \<ge>  n" using assms by simp
+    finally have "card_heap (heap I) \<ge>  n" .
+    thus "enat n \<le> card_heap (heap I)" by simp
+  qed
+  thus ?thesis by blast
+qed
+
+lemma heap_card_infinite_universe:
+  assumes "\<not>finite (UNIV::'addr set)"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_superior_to (enat n))} \<noteq> {}"
+proof -
+  have "\<exists> A::'addr set. finite A\<and> card A = n" using assms
+    using infinite_arbitrarily_large by blast
+  from this obtain A::"'addr set" where "finite A" and "card A = n" by auto
+  thus ?thesis using heap_card_domain_card[of A n] by simp
+qed
+
+lemma not_heap_card:
+  assumes "Suc 0 \<le> n"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (not (ext_card_heap_superior_to (enat n)))} \<noteq> {}"
+proof -
+  define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
+  define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
+  define I::"('var, 'addr, 'k::finite) interp" where "I = to_interp store h_empty"
+  have "card_heap (heap I) = card (h_dom h_empty)" unfolding card_heap_def unfolding I_def
+    by (simp add: h_dom_empty_heap heap_def to_interp_def)
+  also have "card (h_dom h_empty) = 0" by (simp add: h_dom_empty_heap) 
+  finally have "card_heap (heap I) = 0" by (simp add: zero_enat_def)
+  hence "\<not> evaluation I (ext_card_heap_superior_to (enat n))" using tf_prop_3 assms
+    by (metis enat_ord_simps(1) not_less_eq_eq zero_enat_def)
+  hence "evaluation I (not (ext_card_heap_superior_to (enat n)))" by simp
+  thus ?thesis by blast
+qed
 
 
 end
