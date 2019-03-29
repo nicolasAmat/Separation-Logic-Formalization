@@ -7,8 +7,7 @@ section {* Minterms *}
 text {* This section contains the minterms definition and some propositions related to them. *}
 
 theory Minterm
-imports
-  Formula_Relation 
+imports 
   Test_Formulae
 begin
 
@@ -143,13 +142,18 @@ proof
     qed
   qed
 qed
-      
 
 
-(*
-definition e_minterm
-  where ""
-*)
+subsection {* Some Sets Definitions *}
+
+definition e_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "e_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
+                     \<inter> ({eq x y|x y. True} \<union> {not (eq x y)|x y. True})"
+
+definition a_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "a_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
+                     \<inter> {alloc x|x. True}" 
+
 
 (* 3 lemmes:
 - si minterm \<Rightarrow> a
