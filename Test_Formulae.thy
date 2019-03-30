@@ -28,15 +28,15 @@ definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
 
 subsection {* Cardinality Constraint *}
 
-fun card_heap_superior_to :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
+fun card_heap_ge :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
-      "card_heap_superior_to (Suc n) = sl_conj (card_heap_superior_to n) (not sl_emp)"
-    | "card_heap_superior_to 0 = sl_true"
+      "card_heap_ge (Suc n) = sl_conj (card_heap_ge n) (not sl_emp)"
+    | "card_heap_ge 0 = sl_true"
 
-primrec ext_card_heap_superior_to ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
+primrec ext_card_heap_ge ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where
-      "ext_card_heap_superior_to \<infinity> = sl_false"
-    | "ext_card_heap_superior_to n = card_heap_superior_to n"
+      "ext_card_heap_ge \<infinity> = sl_false"
+    | "ext_card_heap_ge n = card_heap_ge n"
 
 
 subsection {* Inductive Set *}
@@ -45,7 +45,7 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
   where
     "(points_to x y) \<in> test_formulae"
   | "(alloc x) \<in> test_formulae"
-  | "(ext_card_heap_superior_to n) \<in> test_formulae"
+  | "(ext_card_heap_ge n) \<in> test_formulae"
   | "(eq x y) \<in> test_formulae"
 
 
@@ -137,10 +137,10 @@ subsubsection {* Proposition 3 *}
 lemma tf_prop_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and n::enat
-  shows "(evaluation I (ext_card_heap_superior_to n))
+  shows "(evaluation I (ext_card_heap_ge n))
        = (card_heap (heap I) \<ge> n)"
 proof
-  assume "evaluation I (ext_card_heap_superior_to n)"
+  assume "evaluation I (ext_card_heap_ge n)"
   thus "card_heap (heap I) \<ge> n"
   proof (induct n arbitrary: I)
     case (enat nat)
@@ -151,15 +151,15 @@ proof
         using zero_enat_def by auto 
     next
       case (Suc nat)
-      have "evaluation I (sl_conj (card_heap_superior_to nat) (not sl_emp))"
+      have "evaluation I (sl_conj (card_heap_ge nat) (not sl_emp))"
         using Suc.prems by auto 
       from this obtain h1 h2 
         where def_0: "(disjoint_heaps h1 h2)
                     \<and> (union_heaps h1 h2 = heap I)
-                    \<and> (evaluation (to_interp (store I) h1) (card_heap_superior_to nat))
+                    \<and> (evaluation (to_interp (store I) h1) (card_heap_ge nat))
                     \<and> (evaluation (to_interp (store I) h2) (not sl_emp))"
         using evaluation.simps(9) by blast
-      hence "evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
+      hence "evaluation (to_interp (store I) h1) (ext_card_heap_ge nat)"
         by simp
       hence "card_heap h1 \<ge> nat"
         by (metis Suc.hyps heap_on_to_interp) 
@@ -177,7 +177,7 @@ proof
   qed
 next
   assume "card_heap (heap I) \<ge> n"
-  thus "evaluation I (ext_card_heap_superior_to n)"
+  thus "evaluation I (ext_card_heap_ge n)"
   proof (induction n arbitrary : I)
     case (enat nat)
     then show ?case
@@ -198,7 +198,7 @@ next
             union_remove_from_heap_restricted_heap)
       hence "card_heap h1 \<ge> nat" unfolding h1_def using Suc.prems l_def
         by (simp add: card_remove_from_heap)
-      hence h1_res:"evaluation (to_interp (store I) h1) (ext_card_heap_superior_to nat)"
+      hence h1_res:"evaluation (to_interp (store I) h1) (ext_card_heap_ge nat)"
         by (metis Suc.IH heap_on_to_interp)
       have "\<not>(empty_heap h2)" unfolding h2_def
         by (simp add: l_def restricted_heap_not_empty)
@@ -267,7 +267,7 @@ lemma to_heap_domain:
 lemma heap_card_domain_card:
   fixes A::"'addr set"
   assumes "finite A" and "n \<le> card A"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_superior_to (enat n))} \<noteq> {}"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_ge (enat n))} \<noteq> {}"
 proof -
   define hfct::"'addr \<Rightarrow> (('addr, 'k) vec) option" where "hfct = (\<lambda> a. (if a\<in> A then (Some (vec a)) else None))"
   have "dom hfct = A" unfolding hfct_def dom_def by simp
@@ -276,7 +276,7 @@ proof -
   define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
   define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
   define I where "I = to_interp store mheap"
-  have "evaluation I (ext_card_heap_superior_to (enat n))" 
+  have "evaluation I (ext_card_heap_ge (enat n))" 
   proof (rule tf_prop_3[THEN iffD2])
     have "card_heap (heap I) = card (h_dom mheap)" unfolding card_heap_def unfolding I_def
       by (simp add: heap_def to_interp_def)
@@ -290,7 +290,7 @@ qed
 
 lemma heap_card_infinite_universe:
   assumes "\<not>finite (UNIV::'addr set)"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_superior_to (enat n))} \<noteq> {}"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_ge (enat n))} \<noteq> {}"
 proof -
   have "\<exists> A::'addr set. finite A\<and> card A = n" using assms
     using infinite_arbitrarily_large by blast
@@ -300,7 +300,7 @@ qed
 
 lemma not_heap_card:
   assumes "Suc 0 \<le> n"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (not (ext_card_heap_superior_to (enat n)))} \<noteq> {}"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (not (ext_card_heap_ge (enat n)))} \<noteq> {}"
 proof -
   define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
   define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
@@ -309,9 +309,9 @@ proof -
     by (simp add: h_dom_empty_heap heap_def to_interp_def)
   also have "card (h_dom h_empty) = 0" by (simp add: h_dom_empty_heap) 
   finally have "card_heap (heap I) = 0" by (simp add: zero_enat_def)
-  hence "\<not> evaluation I (ext_card_heap_superior_to (enat n))" using tf_prop_3 assms
+  hence "\<not> evaluation I (ext_card_heap_ge (enat n))" using tf_prop_3 assms
     by (metis enat_ord_simps(1) not_less_eq_eq zero_enat_def)
-  hence "evaluation I (not (ext_card_heap_superior_to (enat n)))" by simp
+  hence "evaluation I (not (ext_card_heap_ge (enat n)))" by simp
   thus ?thesis by blast
 qed
 
