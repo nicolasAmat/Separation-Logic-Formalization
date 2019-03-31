@@ -143,6 +143,7 @@ proof
   qed
 qed
 
+
 subsection {* Minterms Functions *}
 
 definition minterm_to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
@@ -154,30 +155,68 @@ definition minterm_to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarro
 
 subsection {* Some Sets Definitions *}
 
-definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "e_minterm M = (minterm_to_sl_formula_set M) 
-                     \<inter> ({eq x y|x y. True} \<union> {not (eq x y)|x y. True})"
+definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "e_minterm M = (minterm_to_literal_set M) 
+                     \<inter> ({to_literal (eq x y)|x y. True} \<union> {to_literal(not (eq x y))|x y. True})"
 
-definition a_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "a_minterm M = (minterm_to_sl_formula_set M) 
-                     \<inter> {alloc x|x. True}"
+definition a_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "a_minterm M = (minterm_to_literal_set M) 
+                     \<inter> {to_literal (alloc x)|x. True}"
 
-definition u_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "u_minterm M = (minterm_to_sl_formula_set M)"
+definition u_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "u_minterm M = (minterm_to_literal_set M)"
                  
-definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "p_minterm M = (minterm_to_sl_formula_set M) 
-                     \<inter> ({points_to x y|x y. True} \<union> {not (points_to x y)|x y. True})"
+definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "p_minterm M = (minterm_to_literal_set M) 
+                     \<inter> ({to_literal (points_to x y)|x y. True} \<union> {to_literal (not (points_to x y))|x y. True})"
 
 
 subsection {* Minterms Sets Equality *}
 
 lemma minterms_sets_equality:
   "minterm_to_literal_set M = 
-   to_literal_set (e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M) \<union> 
+   e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M \<union> 
    {l \<in> (minterm_to_literal_set M). (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}"
 proof
-  oops
+  have "minterm_to_literal_set M \<subseteq> (u_minterm M)"
+    by (simp add: u_minterm_def)
+  thus "minterm_to_literal_set M
+        \<subseteq> e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M \<union>
+        {l \<in> minterm_to_literal_set M. (\<exists>n. to_sl_formula l = ext_card_heap_ge n) \<or> (\<exists>n. to_sl_formula l = not (ext_card_heap_ge n))}"
+    by (simp add: sup.coboundedI1 u_minterm_def)
+next
+  show "e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M \<union>
+        {l \<in> minterm_to_literal_set M. (\<exists>n. to_sl_formula l = ext_card_heap_ge n) \<or> (\<exists>n. to_sl_formula l = not (ext_card_heap_ge n))}
+        \<subseteq> minterm_to_literal_set M"
+  proof -
+  have f1: "\<And>m. a_minterm (m::('a, 'b) minterm) = Rep_minterm m \<inter> {l. \<exists>a. l = to_literal (alloc a)}"
+    by (simp add: a_minterm_def minterm_to_literal_set_def)
+  have f2: "\<And>m. p_minterm (m::('a, 'b) minterm) = Rep_minterm m \<inter> ({l. \<exists>a v. l = to_literal (points_to a v)} \<union> {l. \<exists>a v. l = to_literal (not (points_to a v))})"
+    by (simp add: minterm_to_literal_set_def p_minterm_def)
+    have f3: "\<And>m. e_minterm (m::('a, 'b) minterm) = Rep_minterm m \<inter> ({l. \<exists>a aa. l = to_literal (eq a aa)} \<union> {l. \<exists>a aa. l = to_literal (not (eq a aa))})"
+      by (simp add: e_minterm_def minterm_to_literal_set_def)
+    obtain ll :: "('a, 'b) literal set \<Rightarrow> ('a, 'b) literal set \<Rightarrow> ('a, 'b) literal" where
+      f4: "\<And>L La. (L \<subseteq> La \<or> ll L La \<in> L) \<and> (ll L La \<notin> La \<or> L \<subseteq> La)"
+  by (metis (no_types) subsetI)
+    moreover
+  { assume "ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M) \<notin> Rep_minterm M"
+    moreover
+  { assume "(ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M) \<notin> minterm_to_literal_set M \<or> (\<forall>e. to_sl_formula (ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M)) \<noteq> ext_card_heap_ge e) \<and> (\<forall>e. to_sl_formula (ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M)) \<noteq> not (ext_card_heap_ge e))) \<and> ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M) \<notin> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<and> ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M) \<notin> Rep_minterm M"
+    then have "ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M) \<notin> {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M}"
+          by blast
+        then have "{l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} \<subseteq> Rep_minterm M"
+          using f4 by meson }
+      ultimately have "ll {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} (Rep_minterm M) \<in> Rep_minterm M \<or> {l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} \<subseteq> Rep_minterm M"
+        by (simp add: minterm_to_literal_set_def) }
+    ultimately have "{l. l \<in> minterm_to_literal_set M \<and> ((\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))) \<or> l \<in> {l \<in> Rep_minterm M. l \<in> {l. (\<exists>a v. l = to_literal (not (points_to a v))) \<or> (\<exists>a v. l = to_literal (points_to a v))}} \<or> l \<in> Rep_minterm M} \<subseteq> Rep_minterm M"
+      by meson
+    then have "e_minterm M \<union> a_minterm M \<union> Rep_minterm M \<union> p_minterm M \<union> {l \<in> minterm_to_literal_set M. (\<exists>e. to_sl_formula l = ext_card_heap_ge e) \<or> (\<exists>e. to_sl_formula l = not (ext_card_heap_ge e))} \<subseteq> Rep_minterm M"
+      using f3 f2 f1 by auto
+    then show ?thesis
+      by (simp add: minterm_to_literal_set_def u_minterm_def)
+  qed
+qed
+
 
 (* 3 lemmes:
 - si minterm \<Rightarrow> a
@@ -185,6 +224,5 @@ proof
 - si a et b \<Rightarrow> mintern
 *)
 
-(* M = e_minter \<union> a_minterm \<union> u_minterm \<union> p_minterm *)
 
 end
