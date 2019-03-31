@@ -153,6 +153,17 @@ definition minterm_to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarro
   where "minterm_to_sl_formula_set M =  {(to_sl_formula l)|l. l \<in> (minterm_to_literal_set M)}"
 
 
+subsection {* Minterms Lemmas *}
+
+lemma minterm_have_ext_card_heap_ge:
+  "\<exists>l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (ext_card_heap_ge n))"
+  using Rep_minterm minterm_to_literal_set_def by fastforce
+
+lemma minterm_have_not_ext_card_heap_ge:
+  "\<exists>l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (not (ext_card_heap_ge n)))"
+  using Rep_minterm minterm_to_literal_set_def by fastforce
+
+
 subsection {* Some Sets Definitions *}
 
 definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
@@ -216,13 +227,6 @@ next
       by (simp add: minterm_to_literal_set_def u_minterm_def)
   qed
 qed
-
-
-(* 3 lemmes:
-- si minterm \<Rightarrow> a
-- si minterm \<Rightarrow> b
-- si a et b \<Rightarrow> mintern
-*)
 
 
 end
