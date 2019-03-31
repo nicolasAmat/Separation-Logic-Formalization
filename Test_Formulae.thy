@@ -217,12 +217,16 @@ qed
 
 subsection {* Literal *}
 
+subsubsection {* Literals Definition *}
+
 typedef ('var, 'k::finite) literal 
   = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae}"
   using test_formulae.intros(3) by force
 
 definition literals :: "('var, 'k::finite) sl_formula set"
   where "literals = ({f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae})"
+
+subsubsection {* Literals Functions *}
 
 definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) sl_formula"
   where "to_sl_formula f = Rep_literal f"
@@ -234,13 +238,6 @@ definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('
   where "to_literal_set S = {to_literal x|x. True}"
 
 subsubsection {* Useful Literals Results *}
-
-(*lemma to_sl_formula_to_literal:
-  fixes f::"('var, 'k::finite) sl_formula"
-  assumes "f \<in> literals"
-  shows "equivalence (UNIV::'addr set) (to_sl_formula (to_literal f)) f"
-  using literals_def by (metis (mono_tags) Abs_literal_inverse assms equivalence_def 
-                         logical_consequence_def to_literal_def to_sl_formula_def)*)
 
 lemma pos_literal_inv[simp]:
   fixes f::"('var, 'k::finite) sl_formula"

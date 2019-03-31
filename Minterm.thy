@@ -143,31 +143,41 @@ proof
   qed
 qed
 
+subsection {* Minterms Functions *}
+
+definition minterm_to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "minterm_to_literal_set M = Rep_minterm M"
+
+definition minterm_to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "minterm_to_sl_formula_set M =  {(to_sl_formula l)|l. l \<in> (minterm_to_literal_set M)}"
+
 
 subsection {* Some Sets Definitions *}
 
-definition e_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "e_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
+definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "e_minterm M = (minterm_to_sl_formula_set M) 
                      \<inter> ({eq x y|x y. True} \<union> {not (eq x y)|x y. True})"
 
-definition a_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "a_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
+definition a_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "a_minterm M = (minterm_to_sl_formula_set M) 
                      \<inter> {alloc x|x. True}"
 
-definition u_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "u_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)}"
+definition u_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "u_minterm M = (minterm_to_sl_formula_set M)"
                  
-
-definition p_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "p_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
+definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
+  where "p_minterm M = (minterm_to_sl_formula_set M) 
                      \<inter> ({points_to x y|x y. True} \<union> {not (points_to x y)|x y. True})"
 
 
 subsection {* Minterms Sets Equality *}
 
 lemma minterms_sets_equality:
-  "Rep_minterm M = to_literal_set (e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M)"
-
+  "minterm_to_literal_set M = 
+   to_literal_set (e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M) \<union> 
+   {l \<in> (minterm_to_literal_set M). (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}"
+proof
+  oops
 
 (* 3 lemmes:
 - si minterm \<Rightarrow> a
