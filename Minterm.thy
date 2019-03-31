@@ -155,12 +155,18 @@ definition a_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_fo
                      \<inter> {alloc x|x. True}"
 
 definition u_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
-  where "u_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
-                     \<inter> ({ext_card_heap_ge n|n. True} \<union> {not (ext_card_heap_ge n)|n. True})"
+  where "u_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)}"
+                 
 
 definition p_minterm::"('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
   where "p_minterm M = {(Rep_literal l)|l. l \<in> (Rep_minterm M)} 
                      \<inter> ({points_to x y|x y. True} \<union> {not (points_to x y)|x y. True})"
+
+
+subsection {* Minterms Sets Equality *}
+
+lemma minterms_sets_equality:
+  "Rep_minterm M = to_literal_set (e_minterm M \<union> a_minterm M \<union> u_minterm M \<union> p_minterm M)"
 
 
 (* 3 lemmes:

@@ -230,7 +230,8 @@ definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k)
 definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k) literal"
   where "to_literal f = Abs_literal f"
 
-
+definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('var, 'k) literal set"
+  where "to_literal_set S = {to_literal x|x. True}"
 
 subsubsection {* Useful Literals Results *}
 
