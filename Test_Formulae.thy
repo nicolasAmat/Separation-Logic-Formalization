@@ -223,8 +223,9 @@ typedef ('var, 'k::finite) literal
   = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae}"
   using test_formulae.intros(3) by force
 
-definition literals :: "('var, 'k::finite) sl_formula set"
-  where "literals = ({f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae})"
+(* definition literals :: "('var, 'k::finite) sl_formula set"
+  where "literals = ({f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae})" *)
+
 
 subsubsection {* Literals Functions *}
 
@@ -236,6 +237,82 @@ definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k)
 
 definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('var, 'k) literal set"
   where "to_literal_set S = {to_literal x|x. True}"
+
+(* TODO : add section *)
+fun remove_first_not :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
+  where "remove_first_not (not l) = l"
+      | "remove_first_not l = l"
+
+definition to_atom :: "('var, 'k::finite) literal \<Rightarrow> ('var ,'k) sl_formula"
+  where "to_atom l = remove_first_not (to_sl_formula l)"
+
+lemma literal_atom_cases:
+  "(to_literal (to_atom l) = l) \<or> to_literal (not (to_atom l)) = l"
+  by (metis Rep_literal_inverse remove_first_not.simps(1) remove_first_not.simps(10) 
+      remove_first_not.simps(2) remove_first_not.simps(3) remove_first_not.simps(4) 
+      remove_first_not.simps(5) remove_first_not.simps(6) remove_first_not.simps(7) 
+      remove_first_not.simps(8) remove_first_not.simps(9) sl_formula.exhaust 
+      to_atom_def to_literal_def to_sl_formula_def)
+
+lemma to_atom_is_test_formula:
+  fixes l::"('var, 'k::finite) literal"
+  shows "(to_atom l) \<in> test_formulae"
+proof (cases "to_sl_formula l \<in> test_formulae")
+  case False
+  have "\<And>l. (\<exists>s. Rep_literal (l::('var, 'k) literal) = not s \<and> s \<in> test_formulae) \<or> Rep_literal l \<in> test_formulae"
+    using Rep_literal by blast
+  then show ?thesis
+    by (metis (no_types) False remove_first_not.simps(1) to_atom_def to_sl_formula_def)
+next
+  case True
+  have "to_atom l = to_sl_formula l" using True
+  proof
+    {
+      fix x y
+      assume "to_sl_formula l = points_to x y"
+      show "to_atom l = to_sl_formula l"
+        by (simp add: \<open>to_sl_formula l = points_to x y\<close> points_to_def to_atom_def)
+    }
+    {
+      fix x
+      assume "to_sl_formula l = alloc x"
+      show "to_atom l = to_sl_formula l"
+        by (simp add: \<open>to_sl_formula l = alloc x\<close> alloc_def to_atom_def)
+    }
+    {
+      fix n
+      assume "to_sl_formula l = (ext_card_heap_ge n::(('var, 'k::finite) sl_formula))"
+      show "to_atom l = to_sl_formula l"
+      proof (cases "n = \<infinity>")
+        case True
+        then show ?thesis
+          by (simp add: \<open>to_sl_formula l = ext_card_heap_ge n\<close> to_atom_def) 
+      next
+        case False
+        show ?thesis
+        proof (cases "n = 0")
+          case True
+          then show ?thesis
+            by (simp add: \<open>to_sl_formula l = ext_card_heap_ge n\<close> to_atom_def zero_enat_def) 
+        next
+          case False
+          then show ?thesis
+            by (metis \<open>to_sl_formula l = ext_card_heap_ge n\<close> card_heap_ge.elims 
+                ext_card_heap_ge.simps(1) ext_card_heap_ge.simps(2) not_infinity_eq 
+                remove_first_not.simps(2) remove_first_not.simps(3) remove_first_not.simps(9) to_atom_def) 
+        qed
+      qed
+    }
+    {
+      fix x y
+      assume "to_sl_formula l = eq x y"
+      thus "to_atom l = to_sl_formula l"
+        by (simp add: to_atom_def)
+    }
+  qed
+  thus ?thesis using True
+    by simp
+qed
 
 
 subsection {* Literals Evaluation *}
