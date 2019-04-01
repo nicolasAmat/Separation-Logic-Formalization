@@ -182,6 +182,12 @@ definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) lit
                      \<inter> ({to_literal (points_to x y)|x y. True} \<union> {to_literal (not (points_to x y))|x y. True})"
 
 
+subsection {* Minterms Evaluation *}
+
+definition minterm_evl :: "('var, 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) minterm \<Rightarrow> bool"
+  where "minterm_evl I M = literal_set_evl I (minterm_to_literal_set M)"
+
+
 subsection {* Minterms Sets Equality *}
 
 lemma minterms_sets_equality:
@@ -227,6 +233,22 @@ next
       by (simp add: minterm_to_literal_set_def u_minterm_def)
   qed
 qed
+
+
+subsection {* Minterms Propositions *}
+
+subsubsection {* Proposition 5 *}
+
+lemma minterm_prop_5:
+  fixes I_1::"('var, 'addr, 'k::finite) interp"
+    and I_2::"('var, 'addr, 'k::finite) interp"
+    and M::"('var, 'k) minterm"
+  assumes "store I_1 = store I_2"
+  shows "literal_set_evl I_1 (e_minterm M)
+       = literal_set_evl I_2 (e_minterm M)"
+proof
+  assume "literal_set_evl I_1 (e_minterm M)"
+  thus "literal_set_evl I_2 (e_minterm M)"
 
 
 end

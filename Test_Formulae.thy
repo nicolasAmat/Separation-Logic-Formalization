@@ -237,6 +237,16 @@ definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k)
 definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('var, 'k) literal set"
   where "to_literal_set S = {to_literal x|x. True}"
 
+
+subsection {* Literals Evaluation *}
+
+definition literal_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal \<Rightarrow> bool"
+  where "literal_evl I l = evaluation I (to_sl_formula l)"
+
+definition literal_set_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal set \<Rightarrow> bool"
+  where "literal_set_evl I S = (\<forall>l\<in>S. literal_evl I l)"
+
+
 subsubsection {* Useful Literals Results *}
 
 lemma pos_literal_inv[simp]:
