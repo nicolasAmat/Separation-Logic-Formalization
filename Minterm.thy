@@ -169,19 +169,30 @@ lemma minterm_have_not_ext_card_heap_ge:
 
 subsection {* Some Sets Definitions *}
 
-(* ecrire e_lit = ({to_literal (eq x y)|x y. True} \<union> {to_literal (not (eq x y))|x y. True}) *)
-(* e_minterm = M \<inter> e_lit *)
+subsubsection {* Intersections Sets *}
+
+definition e_literals :: "('var, 'k::finite) literal set"
+  where "e_literals = {to_literal (eq x y)|x y. True} 
+                    \<union> {to_literal (not (eq x y))|x y. True}"
+
+definition a_literals :: "('var, 'k::finite) literal set"
+  where "a_literals = {to_literal (alloc x)|x. True} 
+                    \<union> {to_literal (not (alloc x))|x. True}"
+
+definition p_literals :: "('var, 'k::finite) literal set"
+  where "p_literals = {to_literal (points_to x y)|x y. True} 
+                    \<union> {to_literal (not (points_to x y))|x y. True}"
+
+subsubsection {* Minterms Sets Composed by an Intersection *}
+
 definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
-  where "e_minterm M = (minterm_to_literal_set M)
-                     \<inter> ({to_literal (eq x y)|x y. True} \<union> {to_literal (not (eq x y))|x y. True})"
+  where "e_minterm M = minterm_to_literal_set M \<inter> e_literals"
 
 definition a_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
-  where "a_minterm M = (minterm_to_literal_set M) 
-                     \<inter> ({to_literal (alloc x)|x. True} \<union> {to_literal (not (alloc x))|x. True})"
+  where "a_minterm M = minterm_to_literal_set M \<inter> a_literals"
 
 definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
-  where "p_minterm M = (minterm_to_literal_set M) 
-                     \<inter> ({to_literal (points_to x y)|x y. True} \<union> {to_literal (not (points_to x y))|x y. True})"
+  where "p_minterm M = minterm_to_literal_set M \<inter> p_literals"
 
 
 subsection {* Minterms Evaluation *}
@@ -249,10 +260,14 @@ proof
       by (simp add: to_atom_is_test_formula)
     hence "l_1 \<in> {eq x y |x y. True} \<union> {alloc x |x. True} \<union> {points_to x y |x y. True} \<union> {ext_card_heap_ge n |n. True}" using test_formulae_charact
       by blast
-    hence "l \<in> min_set" unfolding min_set_def using to_atom_minterms_sets e_minterm_def a_minterm_def p_minterm_def
-    
+    hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union>  {l \<in> (minterm_to_literal_set M). (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}"
+      using to_atom_minterms_sets
+      oops
+      hence "l \<in> min_set" unfolding min_set_def using to_atom_minterms_sets e_minterm_def a_minterm_def p_minterm_def
+      sorry
+
 (*
- next
+next
   show "e_minterm M \<union> a_minterm M \<union> p_minterm M \<union>
         {l \<in> minterm_to_literal_set M. (\<exists>n. to_sl_formula l = ext_card_heap_ge n) \<or> (\<exists>n. to_sl_formula l = not (ext_card_heap_ge n))}
         \<subseteq> minterm_to_literal_set M"
@@ -280,8 +295,10 @@ proof -
     assume asm_l: "l \<in> (e_minterm M)"
     hence l_evl: "literal_evl I_1 l"
       using asm literal_set_evl_def by blast
+    hence "l \<in> e_literals"
+      using asm_l e_minterm_def by auto 
     hence "\<exists>x y. l = to_literal (eq x y) \<or> l = to_literal (not (eq x y))"
-      using asm_l e_minterm_def by fastforce
+      using asm_l e_literals_def by force
     thus "literal_evl I_2 l"
       by (metis assms evaluation.simps(3) evaluation.simps(4) l_evl literal_evl_def neg_literal_inv 
           pos_literal_inv test_formulae.intros(4))
