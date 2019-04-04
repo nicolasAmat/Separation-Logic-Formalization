@@ -146,7 +146,7 @@ qed
 
 subsection {* Minterms Functions *}
 
-definition minterm_to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+definition minterm_to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k::finite) literal set"
   where "minterm_to_literal_set M = Rep_minterm M"
 
 definition minterm_to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
@@ -159,12 +159,36 @@ lemma minterm_to_literal_set_composed_by_test_formula:
 subsection {* Minterms Lemmas *}
 
 lemma minterm_have_ext_card_heap_ge:
-  "\<exists>l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (ext_card_heap_ge n))"
-  using Rep_minterm minterm_to_literal_set_def by fastforce
+  fixes M::"('var, 'k::finite) minterm"
+  shows "\<exists>!l\<in>(Rep_minterm M). \<exists>n. ((to_sl_formula l) = (ext_card_heap_ge n))"
+proof -
+  have "Rep_minterm M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+                              (to_sl_formula l) = (ext_card_heap_ge n))
+                          \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+                              (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
+    using Rep_minterm by blast
+  hence "(\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
+       \<and> (\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
+    by simp
+  thus ?thesis
+    by simp
+qed
 
 lemma minterm_have_not_ext_card_heap_ge:
-  "\<exists>l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (not (ext_card_heap_ge n)))"
-  using Rep_minterm minterm_to_literal_set_def by fastforce
+  fixes M::"('var, 'k::finite) minterm"
+  shows "\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (not (ext_card_heap_ge n)))"
+proof -
+  have "Rep_minterm M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+                              (to_sl_formula l) = (ext_card_heap_ge n))
+                          \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+                              (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
+    using Rep_minterm by blast
+  hence "(\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
+       \<and> (\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
+    by simp
+  thus ?thesis
+    by (simp add: minterm_to_literal_set_def)
+qed
 
 
 subsection {* Some Sets Definitions *}
@@ -260,8 +284,8 @@ proof
       by (simp add: to_atom_is_test_formula)
     hence "l_1 \<in> {eq x y |x y. True} \<union> {alloc x |x. True} \<union> {points_to x y |x y. True} \<union> {ext_card_heap_ge n |n. True}" using test_formulae_charact
       by blast
-    hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union>  {l \<in> (minterm_to_literal_set M). (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}"
-      using to_atom_minterms_sets
+    hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union> {to_literal (ext_card_heap_ge n)|n. True}"
+      using to_atom_minterms_sets from_to_atom_in_a_minterm from_to_atom_in_e_minterm from_to_atom_in_p_minterm
       oops
       hence "l \<in> min_set" unfolding min_set_def using to_atom_minterms_sets e_minterm_def a_minterm_def p_minterm_def
       sorry
