@@ -160,15 +160,15 @@ subsection {* Minterms Lemmas *}
 
 lemma minterm_have_ext_card_heap_ge:
   fixes M::"('var, 'k::finite) minterm"
-  shows "\<exists>!l\<in>(Rep_minterm M). \<exists>n. ((to_sl_formula l) = (ext_card_heap_ge n))"
+  shows "\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (ext_card_heap_ge n))"
 proof -
-  have "Rep_minterm M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+  have "minterm_to_literal_set M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
                               (to_sl_formula l) = (ext_card_heap_ge n))
                           \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
                               (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
-    using Rep_minterm by blast
-  hence "(\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
-       \<and> (\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
+    by (metis (no_types) Rep_minterm minterm_to_literal_set_def)
+  hence "(\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
+       \<and> (\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
     by simp
   thus ?thesis
     by simp
@@ -178,13 +178,13 @@ lemma minterm_have_not_ext_card_heap_ge:
   fixes M::"('var, 'k::finite) minterm"
   shows "\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. ((to_sl_formula l) = (not (ext_card_heap_ge n)))"
 proof -
-  have "Rep_minterm M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
+  have "minterm_to_literal_set M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
                               (to_sl_formula l) = (ext_card_heap_ge n))
                           \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
                               (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
-    using Rep_minterm by blast
-  hence "(\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
-       \<and> (\<exists>!l\<in>(Rep_minterm M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
+    by (metis (no_types) Rep_minterm minterm_to_literal_set_def)
+  hence "(\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
+       \<and> (\<exists>!l\<in>(minterm_to_literal_set M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
     by simp
   thus ?thesis
     by (simp add: minterm_to_literal_set_def)
