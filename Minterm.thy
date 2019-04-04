@@ -218,7 +218,7 @@ qed
 
 lemma to_atom_minterms_sets:
   fixes M::"('var , 'k::finite) literal set"
-  assumes "\<And>l::(('var, 'k) literal). (l \<in> M) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> M"
+  assumes "\<And>l::(('var, 'k) literal). ((l \<in> M) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae) \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> M"
     and "to_literal (to_atom l) \<in> M"  
   shows "l \<in> M"
   by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
@@ -228,21 +228,21 @@ lemma from_to_atom_in_e_minterm:
   assumes "\<And>l::(('var, 'k) literal). (l \<in> (e_minterm M)) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> (e_minterm M)"
     and "to_literal (to_atom l) \<in> (e_minterm M)"
   shows "l \<in> (e_minterm M)"
-  using assms(1) assms(2) to_atom_minterms_sets by auto
+  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
 
 lemma from_to_atom_in_a_minterm:
   fixes M::"('var , 'k::finite) minterm"
   assumes "\<And>l::(('var, 'k) literal). (l \<in> (a_minterm M)) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> (a_minterm M)"
     and "to_literal (to_atom l) \<in> (a_minterm M)"
   shows "l \<in> (a_minterm M)"
-  using assms(1) assms(2) to_atom_minterms_sets by auto
+  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
 
 lemma from_to_atom_in_p_minterm:
   fixes M::"('var , 'k::finite) minterm"
   assumes "\<And>l::(('var, 'k) literal). (l \<in> (p_minterm M)) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> (p_minterm M)"
     and "to_literal (to_atom l) \<in> (p_minterm M)"
   shows "l \<in> (p_minterm M)"
-  using assms(1) assms(2) to_atom_minterms_sets by auto
+  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
 
 lemma minterms_sets_equality:
   fixes M::"('var, 'k::finite) minterm"
