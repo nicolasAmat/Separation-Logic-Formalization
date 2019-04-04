@@ -153,8 +153,11 @@ definition to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarrow> ('var
   where "to_sl_formula_set M =  {(to_sl_formula l)|l. l \<in> (to_literal_set M)}"
 
 lemma to_literal_set_composed_by_test_formula:
-  "\<forall>l \<in> (to_literal_set M). (to_sl_formula (l::(('var, 'k::finite) literal)) \<in> test_formulae) \<or> (\<exists>l_prim. (l_prim \<in> test_formulae))"
-  oops
+  "\<forall>l \<in> (to_literal_set M). 
+    (to_sl_formula (l::(('var, 'k::finite) literal)) \<in> test_formulae) 
+  \<or> (\<exists>l_prim. (l = to_literal (not l_prim)) \<and> (l_prim \<in> test_formulae))"
+  by (metis literal_atom_cases pos_literal_inv to_atom_is_test_formula)
+
 
 subsection {* Minterms Lemmas *}
 
