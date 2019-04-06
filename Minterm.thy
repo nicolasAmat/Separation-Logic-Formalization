@@ -285,11 +285,14 @@ proof
     assume asm:"l \<in> (to_literal_set M)"
     from this obtain l_1 where "l_1 = to_atom l" and "l_1 \<in> test_formulae"
       by (simp add: to_atom_is_test_formula)
-    hence "l_1 \<in> {eq x y |x y. True} 
-               \<union> {alloc x |x. True} 
-               \<union> {points_to x y |x y. True} 
-               \<union> {(to_atom l)|l. l \<in> (to_literal_set M) \<and> (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}" 
+    hence "l_1 \<in> {eq x y |x y. True}
+               \<union> {alloc x |x. True}
+               \<union> {points_to x y |x y. True}
+               \<union> {(to_atom l) |l. l \<in> (to_literal_set M) \<and> (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}" 
       using asm min_set_def
+    
+
+
       sorry (* First idea that I want to prove *) 
 
     hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union> {to_literal (ext_card_heap_ge n)|n. True}"
@@ -307,6 +310,23 @@ next
 qed
 *)
       oops
+
+
+subsection {* Complete Definition *}
+
+subsubsection {* E-complete *}
+
+definition E_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
+  where "E_complete S M = ((\<exists>!x\<in>S. \<exists>!y\<in>S. (to_literal (eq x y)) \<in> (to_literal_set M))
+                         \<and> (\<exists>!x\<in>S. \<exists>!y\<in>S. (to_literal (not (eq x y))) \<in> (to_literal_set M)))"
+
+
+subsubsection {* A-complete *}
+
+definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
+  where "A_complete S M = ((\<exists>!x\<in>S. (to_literal (alloc x)) \<in> (to_literal_set M))
+                         \<and> (\<exists>!x\<in>S. (to_literal (not (alloc x)) \<in> (to_literal_set M))))"
+
 
 subsection {* Minterms Propositions *}
 
@@ -336,6 +356,10 @@ proof -
           pos_literal_inv test_formulae.intros(4))
   qed
 qed
-  
+
+
+subsubsection {* Proposition 6 *}
+
+
 
 end
