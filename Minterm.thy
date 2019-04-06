@@ -210,6 +210,7 @@ definition p_literals :: "('var, 'k::finite) literal set"
   where "p_literals = {to_literal (points_to x y)|x y. True} 
                     \<union> {to_literal (not (points_to x y))|x y. True}"
 
+
 subsubsection {* Minterms Sets Composed by an Intersection *}
 
 definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
@@ -312,7 +313,7 @@ qed
       oops
 
 
-subsection {* Complete Definition *}
+subsection {* Completeness Definition *}
 
 subsubsection {* E-complete *}
 
@@ -330,6 +331,15 @@ definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Ri
   = (\<forall>x\<in>S.
     ((to_literal (alloc x)) \<in> (to_literal_set M) \<and> (to_literal (not (alloc x))) \<notin> (to_literal_set M))
   \<or> (to_literal (not (alloc x))) \<in> (to_literal_set M) \<and> (to_literal (alloc x)) \<notin> (to_literal_set M))"
+
+
+subsection {* Closures Definitions *}
+
+subsubsection {* Complement Closure *}
+
+subsubsection {* Points-to Closure *}
+
+subsubsection {* Domain Closure *}
 
 
 subsection {* Minterms Propositions *}
