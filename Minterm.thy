@@ -317,15 +317,19 @@ subsection {* Complete Definition *}
 subsubsection {* E-complete *}
 
 definition E_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
-  where "E_complete S M = ((\<exists>!x\<in>S. \<exists>!y\<in>S. (to_literal (eq x y)) \<in> (to_literal_set M))
-                         \<and> (\<exists>!x\<in>S. \<exists>!y\<in>S. (to_literal (not (eq x y))) \<in> (to_literal_set M)))"
+  where "E_complete S M 
+  = (\<forall>x\<in>S. \<forall>y\<in>S.
+    ((to_literal (eq x y)) \<in> (to_literal_set M) \<and> (to_literal (not (eq x y))) \<notin> (to_literal_set M))
+  \<or> (to_literal (not (eq x y))) \<in> (to_literal_set M) \<and> (to_literal (eq x y)) \<notin> (to_literal_set M))"
 
 
 subsubsection {* A-complete *}
 
 definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
-  where "A_complete S M = ((\<exists>!x\<in>S. (to_literal (alloc x)) \<in> (to_literal_set M))
-                         \<and> (\<exists>!x\<in>S. (to_literal (not (alloc x)) \<in> (to_literal_set M))))"
+  where "A_complete S M
+  = (\<forall>x\<in>S.
+    ((to_literal (alloc x)) \<in> (to_literal_set M) \<and> (to_literal (not (alloc x))) \<notin> (to_literal_set M))
+  \<or> (to_literal (not (alloc x))) \<in> (to_literal_set M) \<and> (to_literal (alloc x)) \<notin> (to_literal_set M))"
 
 
 subsection {* Minterms Propositions *}
