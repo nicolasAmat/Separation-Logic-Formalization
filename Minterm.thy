@@ -285,13 +285,18 @@ proof
     assume asm:"l \<in> (to_literal_set M)"
     from this obtain l_1 where "l_1 = to_atom l" and "l_1 \<in> test_formulae"
       by (simp add: to_atom_is_test_formula)
-    hence "l_1 \<in> {eq x y |x y. True} \<union> {alloc x |x. True} \<union> {points_to x y |x y. True} \<union> {ext_card_heap_ge n |n. True}" using test_formulae_charact
-      by blast
+    hence "l_1 \<in> {eq x y |x y. True} 
+               \<union> {alloc x |x. True} 
+               \<union> {points_to x y |x y. True} 
+               \<union> {(to_atom l)|l. l \<in> (to_literal_set M) \<and> (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}" 
+      using asm min_set_def
+      sorry (* First idea that I want to prove *) 
+
     hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union> {to_literal (ext_card_heap_ge n)|n. True}"
       using to_atom_minterms_sets from_to_atom_in_a_minterm from_to_atom_in_e_minterm from_to_atom_in_p_minterm
       oops
-      hence "l \<in> min_set" unfolding min_set_def using to_atom_minterms_sets e_minterm_def a_minterm_def p_minterm_def
-      sorry
+    hence "l \<in> min_set" unfolding min_set_def using to_atom_minterms_sets e_minterm_def a_minterm_def p_minterm_def
+      oops
 
 (*
 next
