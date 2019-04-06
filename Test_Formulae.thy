@@ -243,16 +243,40 @@ fun remove_first_not :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) 
   where "remove_first_not (not l) = l"
       | "remove_first_not l = l"
 
+
 definition to_atom :: "('var, 'k::finite) literal \<Rightarrow> ('var ,'k) sl_formula"
   where "to_atom l = remove_first_not (to_sl_formula l)"
 
-lemma literal_atom_cases:
+lemma literal_atom_cases_tmp:
   "(to_literal (to_atom l) = l) \<or> to_literal (not (to_atom l)) = l"
   by (metis Rep_literal_inverse remove_first_not.simps(1) remove_first_not.simps(10) 
       remove_first_not.simps(2) remove_first_not.simps(3) remove_first_not.simps(4) 
       remove_first_not.simps(5) remove_first_not.simps(6) remove_first_not.simps(7) 
       remove_first_not.simps(8) remove_first_not.simps(9) sl_formula.exhaust 
       to_atom_def to_literal_def to_sl_formula_def)
+
+lemma literal_atom_cases:
+  obtains l where "l = to_literal (to_atom l)" | "l = to_literal (not (to_atom l))" 
+proof (cases "l = to_literal (to_atom l)")
+  case True
+  thus ?thesis 
+  proof -
+  have f1: "\<And>s. (s::('a, 'b) sl_formula) \<notin> Collect (sup (\<lambda>s. s \<in> {s. s \<in> test_formulae}) (\<lambda>s. s \<in> {not s |s. s \<in> test_formulae})) \<or> Rep_literal (Abs_literal s) = s"
+  using Abs_literal_inverse by blast
+    have "(sl_false::('a, 'b) sl_formula) \<in> test_formulae"
+      by (metis (no_types) ext_card_heap_ge.simps(1) test_formulae.intros(3))
+    then have "(sl_false::('a, 'b) sl_formula) \<in> Collect (sup (\<lambda>s. s \<in> {s. s \<in> test_formulae}) (\<lambda>s. s \<in> {not s |s. s \<in> test_formulae}))"
+      by blast
+    then show ?thesis
+      using f1 by (metis (lifting) remove_first_not.simps(3) that(1) to_atom_def to_literal_def to_sl_formula_def)
+  qed
+next
+  case False
+  hence "l = to_literal (not (to_atom l))" using literal_atom_cases_tmp[of l] by simp
+  thus ?thesis using that(2) by auto 
+qed
+
+
 
 lemma to_atom_is_test_formula:
   fixes l::"('var, 'k::finite) literal"

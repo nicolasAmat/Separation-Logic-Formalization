@@ -156,7 +156,7 @@ lemma to_literal_set_composed_by_test_formula:
   "\<forall>l \<in> (to_literal_set M). 
     (to_sl_formula (l::(('var, 'k::finite) literal)) \<in> test_formulae) 
   \<or> (\<exists>l_prim. (l = to_literal (not l_prim)) \<and> (l_prim \<in> test_formulae))"
-  by (metis literal_atom_cases pos_literal_inv to_atom_is_test_formula)
+  by (metis literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 
 subsection {* Minterms Lemmas *}
@@ -210,6 +210,9 @@ definition p_literals :: "('var, 'k::finite) literal set"
   where "p_literals = {to_literal (points_to x y)|x y. True} 
                     \<union> {to_literal (not (points_to x y))|x y. True}"
 
+definition h_literals :: "('var, 'k::finite) literal set"
+  where "h_literals = {to_literal (ext_card_heap_ge n) |n. True}
+                    \<union> {to_literal (not (ext_card_heap_ge n)) |n. True}"
 
 subsubsection {* Minterms Sets Composed by an Intersection *}
 
@@ -221,6 +224,10 @@ definition a_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) lit
 
 definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "p_minterm M = to_literal_set M \<inter> p_literals"
+
+definition h_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "h_minterm M = to_literal_set M \<inter> h_literals"
+
 
 
 subsection {* Minterms Evaluation *}
@@ -244,74 +251,71 @@ next
     using test_formulae.simps by fastforce
 qed
 
+lemma to_atom_charact:
+  assumes "to_atom l \<in> test_formulae"
+  shows "l\<in> a_literals \<union> e_literals \<union> p_literals \<union> h_literals"
+proof -
+  have atm: "to_atom l \<in> {(eq x y)|x y. True} \<union> {(alloc x)|x. True}  \<union> {(points_to x y)|x y. True} 
+                 \<union> {ext_card_heap_ge n|n. True}" using test_formulae_charact assms by auto
+  show ?thesis
+  proof (cases "l = to_literal (to_atom l)")
+    case True
+    thus ?thesis using atm unfolding a_literals_def e_literals_def p_literals_def h_literals_def by force
+  next 
+    case False
+    hence "l = to_literal (not (to_atom l))" using literal_atom_cases_tmp[of l] by simp
+    thus ?thesis using atm unfolding a_literals_def e_literals_def p_literals_def h_literals_def by force
+  qed
+qed
+
 lemma to_atom_minterms_sets:
   fixes M::"('var , 'k::finite) literal set"
   assumes "\<And>l::(('var, 'k) literal). ((l \<in> M) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae) \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> M"
     and "to_literal (to_atom l) \<in> M"  
   shows "l \<in> M"
-  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
+  by (metis assms(1) assms(2) literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 lemma from_to_atom_in_e_minterm:
   fixes M::"('var , 'k::finite) minterm"
   assumes "\<And>l::(('var, 'k) literal). (l \<in> (e_minterm M)) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> (e_minterm M)"
     and "to_literal (to_atom l) \<in> (e_minterm M)"
   shows "l \<in> (e_minterm M)"
-  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
+  by (metis assms(1) assms(2) literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 lemma from_to_atom_in_a_minterm:
   fixes M::"('var , 'k::finite) minterm"
   assumes "\<And>l::(('var, 'k) literal). (l \<in> (a_minterm M)) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> (a_minterm M)"
     and "to_literal (to_atom l) \<in> (a_minterm M)"
   shows "l \<in> (a_minterm M)"
-  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
+  by (metis assms(1) assms(2) literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 lemma from_to_atom_in_p_minterm:
   fixes M::"('var , 'k::finite) minterm"
   assumes "\<And>l::(('var, 'k) literal). (l \<in> (p_minterm M)) \<Longrightarrow> (to_sl_formula l) \<in> test_formulae \<Longrightarrow> to_literal (not (to_sl_formula l)) \<in> (p_minterm M)"
     and "to_literal (to_atom l) \<in> (p_minterm M)"
   shows "l \<in> (p_minterm M)"
-  by (metis assms(1) assms(2) literal_atom_cases pos_literal_inv to_atom_is_test_formula)
+  by (metis assms(1) assms(2) literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 lemma minterms_sets_equality:
   fixes M::"('var, 'k::finite) minterm"
-  shows  "to_literal_set M = e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> 
-   {l \<in> (to_literal_set M). (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}"
+  shows  "to_literal_set M = e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> h_minterm M"
 proof
   define min_set::"('var, 'k::finite) literal set" 
-    where "min_set = e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> 
-   {l \<in> (to_literal_set M). (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}"
+    where "min_set = e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> h_minterm M"
   show "to_literal_set M \<subseteq> min_set"
   proof
     fix l
     assume asm:"l \<in> (to_literal_set M)"
-    from this obtain l_1 where "l_1 = to_atom l" and "l_1 \<in> test_formulae"
-      by (simp add: to_atom_is_test_formula)
-    hence "l_1 \<in> {eq x y |x y. True}
-               \<union> {alloc x |x. True}
-               \<union> {points_to x y |x y. True}
-               \<union> {(to_atom l) |l. l \<in> (to_literal_set M) \<and> (\<exists>n. (to_sl_formula l) = (ext_card_heap_ge n)) \<or> (\<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))}" 
-      using asm min_set_def
+    hence "to_atom l\<in> test_formulae" by (simp add: to_atom_is_test_formula)
+    hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union> h_literals" using to_atom_charact by auto
+    thus "l\<in> min_set" unfolding min_set_def using asm
+      by (simp add: a_minterm_def e_minterm_def h_minterm_def p_minterm_def)
+  qed
+  next
+    show "e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> h_minterm M \<subseteq> to_literal_set M"
+      by (simp add: a_minterm_def e_minterm_def h_minterm_def p_minterm_def)
+  qed
     
-
-
-      sorry (* First idea that I want to prove *) 
-
-    hence "l \<in> e_literals \<union> a_literals \<union> p_literals \<union> {to_literal (ext_card_heap_ge n)|n. True}"
-      using to_atom_minterms_sets from_to_atom_in_a_minterm from_to_atom_in_e_minterm from_to_atom_in_p_minterm
-      oops
-    hence "l \<in> min_set" unfolding min_set_def using to_atom_minterms_sets e_minterm_def a_minterm_def p_minterm_def
-      oops
-
-(*
-next
-  show "e_minterm M \<union> a_minterm M \<union> p_minterm M \<union>
-        {l \<in> to_literal_set M. (\<exists>n. to_sl_formula l = ext_card_heap_ge n) \<or> (\<exists>n. to_sl_formula l = not (ext_card_heap_ge n))}
-        \<subseteq> to_literal_set M"
-    by (simp add: a_minterm_def e_minterm_def p_minterm_def subset_iff)
-qed
-*)
-      oops
-
 
 subsection {* Completeness Definition *}
 
