@@ -146,8 +146,11 @@ qed
 
 subsection {* Minterms Functions *}
 
-definition to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k::finite) literal set"
+definition to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "to_literal_set M = Rep_minterm M"
+
+definition to_minterm :: "('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) minterm"
+  where "to_minterm S = Abs_minterm S"
 
 definition to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
   where "to_sl_formula_set M =  {(to_sl_formula l)|l. l \<in> (to_literal_set M)}"
@@ -157,6 +160,18 @@ lemma to_literal_set_composed_by_test_formula:
     (to_sl_formula (l::(('var, 'k::finite) literal)) \<in> test_formulae) 
   \<or> (\<exists>l_prim. (l = to_literal (not l_prim)) \<and> (l_prim \<in> test_formulae))"
   by (metis literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
+
+
+subsection {* Minterms Union *}
+
+definition minterms_union :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) minterm \<Rightarrow> ('var, 'k) minterm"
+  where "minterms_union M1 M2 = to_minterm ((to_literal_set M1) \<union> (to_literal_set M2))"
+
+
+subsection {* Minterm Complement *}
+
+definition minterm_complement :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k::finite) minterm"
+  where "minterm_complement M = (to_minterm {(literal_complement l) | l. l\<in>(to_literal_set M)})"
 
 
 subsection {* Minterms Lemmas *}
@@ -311,11 +326,11 @@ proof
     thus "l\<in> min_set" unfolding min_set_def using asm
       by (simp add: a_minterm_def e_minterm_def h_minterm_def p_minterm_def)
   qed
-  next
+next
     show "e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> h_minterm M \<subseteq> to_literal_set M"
       by (simp add: a_minterm_def e_minterm_def h_minterm_def p_minterm_def)
-  qed
-    
+qed
+  
 
 subsection {* Completeness Definition *}
 
@@ -340,6 +355,10 @@ definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Ri
 subsection {* Closures Definitions *}
 
 subsubsection {* Complement Closure *}
+
+definition cc :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k::finite) minterm"
+  where "cc M = minterms_union M (minterm_complement M)"
+
 
 subsubsection {* Points-to Closure *}
 

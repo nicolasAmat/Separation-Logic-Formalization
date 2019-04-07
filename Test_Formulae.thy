@@ -243,7 +243,6 @@ fun remove_first_not :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) 
   where "remove_first_not (not l) = l"
       | "remove_first_not l = l"
 
-
 definition to_atom :: "('var, 'k::finite) literal \<Rightarrow> ('var ,'k) sl_formula"
   where "to_atom l = remove_first_not (to_sl_formula l)"
 
@@ -337,6 +336,12 @@ next
   thus ?thesis using True
     by simp
 qed
+
+
+subsection {* Literal Complement *}
+
+definition literal_complement :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) literal"
+  where "literal_complement l = to_literal (sl_formula_complement (to_sl_formula l))"
 
 
 subsection {* Literals Evaluation *}

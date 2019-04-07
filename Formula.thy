@@ -52,4 +52,11 @@ primrec evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite)
                                          \<longrightarrow> (evaluation (to_interp (store I) (union_heaps (heap I) h))) Q)"
 
 
+subsection {* Formula Complement *}
+
+fun sl_formula_complement :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
+  where "sl_formula_complement (not l) = l"
+      | "sl_formula_complement l = (not l)"
+
+
 end
