@@ -17,7 +17,8 @@ typedef ('var, 'k::finite) minterm
   = "{S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
           (to_sl_formula l) = (ext_card_heap_ge n))
         \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
-          (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
+          (to_sl_formula l) = (not (ext_card_heap_ge n)))
+        \<and> finite S)}"
 proof
   define l1::"('var, 'k::finite) sl_formula" where "l1 = ext_card_heap_ge 0"
   have "l1\<in> test_formulae" unfolding l1_def using test_formulae.simps by auto
@@ -26,7 +27,8 @@ proof
   show "x \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
             (to_sl_formula l) = (ext_card_heap_ge n))
           \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
-            (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
+            (to_sl_formula l) = (not (ext_card_heap_ge n)))
+          \<and> finite S)}"
   proof (intro CollectI conjI ex1I)
     show "to_literal l1 \<in> x" by (simp add: l1_def x_def) 
     show "\<exists>n. to_sl_formula (to_literal l1) = ext_card_heap_ge n"
@@ -140,6 +142,9 @@ proof
       qed
       ultimately show "l = to_literal (not l1)" by simp
     qed
+  next
+    show "finite x"
+      by (simp add: x_def)
   qed
 qed
 
@@ -162,15 +167,9 @@ lemma to_literal_set_composed_by_test_formula:
   by (metis literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 
-subsection {* Minterms Union *}
-
-definition minterms_union :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) minterm \<Rightarrow> ('var, 'k) minterm"
-  where "minterms_union M1 M2 = to_minterm ((to_literal_set M1) \<union> (to_literal_set M2))"
-
-
 subsection {* Minterm Complement *}
 
-definition minterm_complement :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k::finite) minterm"
+definition minterm_complement :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) minterm"
   where "minterm_complement M = (to_minterm {(literal_complement l) | l. l\<in>(to_literal_set M)})"
 
 
@@ -183,7 +182,8 @@ proof -
   have "to_literal_set M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
                               (to_sl_formula l) = (ext_card_heap_ge n))
                           \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
-                              (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
+                              (to_sl_formula l) = (not (ext_card_heap_ge n)))
+                          \<and> finite S)}"
     by (metis (no_types) Rep_minterm to_literal_set_def)
   hence "(\<exists>!l\<in>(to_literal_set M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
        \<and> (\<exists>!l\<in>(to_literal_set M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
@@ -199,7 +199,8 @@ proof -
   have "to_literal_set M \<in> {S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
                               (to_sl_formula l) = (ext_card_heap_ge n))
                           \<and> (\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
-                              (to_sl_formula l) = (not (ext_card_heap_ge n))))}"
+                              (to_sl_formula l) = (not (ext_card_heap_ge n)))
+                          \<and> finite S)}"
     by (metis (no_types) Rep_minterm to_literal_set_def)
   hence "(\<exists>!l\<in>(to_literal_set M). \<exists>n. (to_sl_formula l) = (ext_card_heap_ge n))
        \<and> (\<exists>!l\<in>(to_literal_set M). \<exists>n. (to_sl_formula l) = (not (ext_card_heap_ge n)))"
@@ -332,15 +333,15 @@ next
 qed
   
 
-subsection {* Completeness Definition *}
+subsection {* Completeness Definitions *}
 
 subsubsection {* E-complete *}
 
 definition E_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
   where "E_complete S M 
   = (\<forall>x\<in>S. \<forall>y\<in>S.
-    ((to_literal (eq x y)) \<in> (to_literal_set M) \<and> (to_literal (not (eq x y))) \<notin> (to_literal_set M))
-  \<or> (to_literal (not (eq x y))) \<in> (to_literal_set M) \<and> (to_literal (eq x y)) \<notin> (to_literal_set M))"
+    (to_literal (eq x y)) \<in> (to_literal_set M)
+  \<or> (to_literal (not (eq x y))) \<in> (to_literal_set M))"
 
 
 subsubsection {* A-complete *}
@@ -348,21 +349,40 @@ subsubsection {* A-complete *}
 definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
   where "A_complete S M
   = (\<forall>x\<in>S.
-    ((to_literal (alloc x)) \<in> (to_literal_set M) \<and> (to_literal (not (alloc x))) \<notin> (to_literal_set M))
-  \<or> (to_literal (not (alloc x))) \<in> (to_literal_set M) \<and> (to_literal (alloc x)) \<notin> (to_literal_set M))"
+    (to_literal (alloc x)) \<in> (to_literal_set M)
+  \<or> (to_literal (not (alloc x))) \<in> (to_literal_set M))"
+
+
+subsubsection {* Sat *}
+
+definition minterm_sat :: "('var, 'k::finite) minterm \<Rightarrow> bool"
+  where "minterm_sat M = (\<forall>l\<in>(to_literal_set M). (literal_complement l) \<notin> (to_literal_set M))"
 
 
 subsection {* Closures Definitions *}
 
 subsubsection {* Complement Closure *}
 
-definition cc :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k::finite) minterm"
-  where "cc M = minterms_union M (minterm_complement M)"
+definition cc :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
+  where "cc M = (to_literal_set M) \<union> ({literal_complement l | l. l\<in>(to_literal_set M)})"
 
 
 subsubsection {* Points-to Closure *}
 
+definition pc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
+  where "pc M = (\<forall>l1\<in>(to_literal_set M). \<exists>x1. \<exists>y1. \<forall>l2\<in>(to_literal_set M). \<exists>x2. \<exists>y2. \<exists>l\<in>(to_literal_set M).
+                 ((l1 = to_literal (points_to x1 y2))
+               \<and> (l2 = to_literal (points_to x2 y2))
+               \<and> (l = to_literal (eq x1 x2)))
+             \<longrightarrow> (y1 = y2))"
+
 subsubsection {* Domain Closure *}
+
+definition dc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
+  where "dc M = (\<exists>l1\<in>(to_literal_set M). \<exists>n1. \<exists>l2\<in>(to_literal_set M). \<exists>n2.
+                (l1 = to_literal (ext_card_heap_ge n1))
+              \<and> (l2 = to_literal (not (ext_card_heap_ge n2)))
+              \<and> (n1 < n2))"
 
 
 subsection {* Minterms Propositions *}
