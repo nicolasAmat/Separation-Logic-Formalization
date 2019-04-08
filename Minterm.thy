@@ -424,17 +424,22 @@ qed
 
 subsubsection {* Proposition 7 *}
 
-lemma test:
+lemma points_to_var_set:
   assumes "to_literal (points_to x y) \<in> to_literal_set M"
   shows "\<forall>i. (y $ i) \<in> (minterm_var_set M)"
 proof
+  fix i
   have "to_literal (sl_conj (sl_mapsto x y) sl_true) \<in> to_literal_set M"
     by (metis assms points_to_def)
   hence "literal_var_set  (to_literal (sl_conj (sl_mapsto x y) sl_true)) \<subseteq> (minterm_var_set M)"
     using minterm_var_set_def by fastforce
   hence "var_set (sl_mapsto x y) \<subseteq> (minterm_var_set M)"
     by (metis Un_subset_iff literal_var_set_def points_to_def pos_literal_inv test_formulae.intros(1) var_set.simps(9))
-  oops
+  hence "({x} \<union> {y $ i | i. True}) \<subseteq> (minterm_var_set M)"
+    by auto
+  thus "(y $ i) \<in> (minterm_var_set M)"
+    by blast
+qed
 
 lemma minterm_prop7_pc:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -455,19 +460,20 @@ proof (intro allI conjI impI)
     using asm assms(1) literal_set_evl_def minterm_evl_def by blast
   hence points_to_2: "(store_and_heap I x2) = Some (store_vector (store I) y2)"
     by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1)
-  have equality:"store I x1 = store I x2"
+  have equality_x: "store I x1 = store I x2"
     by (metis asm assms(1) evaluation.simps(3) literal_evl_def literal_set_evl_def 
         minterm_evl_def pos_literal_inv test_formulae.intros(4))
-  from points_to_1 and points_to_2 and equality have "(store_vector (store I) y1) = (store_vector (store I) y2)"
+  from points_to_1 and points_to_2 and equality_x have "(store_vector (store I) y1) = (store_vector (store I) y2)"
     by (simp add: store_and_heap_def)
   hence "(store I) (y1 $ i) = (store I) (y2 $ i)"
     using equality_store_vector by blast
-  have "(y1 $ i) \<in> (minterm_var_set M)" using asm
-
-
-  show  "to_literal (eq (y1 $ i) (y2 $ i)) \<in> to_literal_set M"
-    oops
-
+  hence "\<not>(literal_evl I (to_literal (not (eq (y1 $ i) (y2 $ i)))))"
+    by (simp add: literal_evl_def test_formulae.intros(4))
+  moreover have "(y1 $ i) \<in> (minterm_var_set M)" using asm
+    by (meson points_to_var_set)
+  ultimately show "to_literal (eq (y1 $ i) (y2 $ i)) \<in> to_literal_set M"
+    by (meson E_complete_def asm assms(1) assms(2) literal_set_evl_def minterm_evl_def points_to_var_set)
+qed
 
 
 end
