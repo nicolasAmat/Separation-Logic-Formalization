@@ -424,6 +424,15 @@ qed
 
 subsubsection {* Proposition 7 *}
 
+subsubsection {* Proposition 8 *}
+
+lemma minterm_prop8:
+  fixes M::"('var, 'k::finite) minterm"
+  assumes "dc M"
+  shows "(\<forall>n1 n2. ((to_literal (ext_card_heap_ge n1)) \<in> (to_literal_set M)
+                 \<and> (to_literal (not (ext_card_heap_ge n2)) \<in> (to_literal_set M)))
+              \<longrightarrow> (n1 < n2))"
+  using assms dc_def by blast
 
 
 end
