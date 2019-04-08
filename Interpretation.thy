@@ -106,6 +106,19 @@ definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('v
 definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k::finite) vec"
   where "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
 
+lemma equality_store_vector:
+  assumes "(store_vector s y1) = (store_vector s y2)"
+  shows "\<forall>i. s (y1 $ i) = s (y2 $ i)"
+proof
+  have "addr_from_var_vector s y2 = addr_from_var_vector s y2"
+    by simp
+  fix i
+  have "s (vec_nth y1 i) = s (vec_nth y2 i)"
+    by (metis UNIV_I addr_from_var_vector_def assms store_vector_def vec_lambda_inverse)
+  thus "s (y1 $ i) = s (y2 $ i)"
+    by simp
+qed
+
 
 subsection {* Useful Heaps Results *}
 

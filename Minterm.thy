@@ -176,7 +176,7 @@ definition minterm_complement :: "('var, 'k::finite) minterm \<Rightarrow> ('var
 subsection {* Minterm Var Set *}
 
 definition minterm_var_set :: "('var, 'k::finite) minterm \<Rightarrow> 'var set"
-  where "minterm_var_set M = {x. \<exists>l\<in>(to_literal_set M).  x\<in>(literal_var_set l)}"
+  where "minterm_var_set M = {x. \<exists>l\<in>(to_literal_set M). x\<in>(literal_var_set l)}"
 
 
 subsection {* Minterms Lemmas *}
@@ -380,8 +380,8 @@ definition pc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
                  (((to_literal (points_to x1 y1)) \<in> (to_literal_set M))
                \<and> ((to_literal (points_to x2 y2)) \<in> (to_literal_set M))
                \<and> ((to_literal (eq x1 x2)) \<in> (to_literal_set M))
-             \<longrightarrow> (\<forall>i::'k. (to_literal (eq (y1$i) (y2$i))) \<in> (to_literal_set M))))"
-(* TODO : to_literal not eq y1$i y2$i \notin to_literal M  ? *)
+             \<longrightarrow> (\<forall>i::'k. (to_literal (eq (y1 $ i) (y2 $ i))) \<in> (to_literal_set M))))"
+
 
 subsubsection {* Domain Closure *}
 
@@ -424,15 +424,46 @@ qed
 
 subsubsection {* Proposition 7 *}
 
-subsubsection {* Proposition 8 *}
+lemma test:
+  assumes "to_literal (points_to x y) \<in> to_literal_set M"
+  shows "\<forall>i. (y $ i) \<in> (minterm_var_set M)"
+proof
+  have "to_literal (sl_conj (sl_mapsto x y) sl_true) \<in> to_literal_set M"
+    by (metis assms points_to_def)
+  hence "var_set (sl_mapsto x y) \<subseteq> (minterm_var_set M)"
 
-lemma minterm_prop8:
-  fixes M::"('var, 'k::finite) minterm"
-  assumes "dc M"
-  shows "(\<forall>n1 n2. ((to_literal (ext_card_heap_ge n1)) \<in> (to_literal_set M)
-                 \<and> (to_literal (not (ext_card_heap_ge n2)) \<in> (to_literal_set M)))
-              \<longrightarrow> (n1 < n2))"
-  using assms dc_def by blast
+lemma minterm_prop7_pc:
+  fixes I::"('var, 'addr, 'k::finite) interp"
+    and M::"('var, 'k) minterm"
+  assumes "minterm_evl I M"
+    and "E_complete (minterm_var_set M) M"
+  shows "pc M" unfolding pc_def
+proof (intro allI conjI impI)
+  fix x1 y1 x2 y2 i
+  assume asm: "to_literal (points_to x1 y1) \<in> to_literal_set M
+             \<and> to_literal (points_to x2 y2) \<in> to_literal_set M
+             \<and> to_literal (eq x1 x2) \<in> to_literal_set M"
+  have "literal_evl I (to_literal (points_to x1 y1))"
+    using asm assms(1) literal_set_evl_def minterm_evl_def by blast
+  hence points_to_1: "(store_and_heap I x1) = Some (store_vector (store I) y1)"
+    by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1)
+  have "literal_evl I (to_literal (points_to x2 y2))"
+    using asm assms(1) literal_set_evl_def minterm_evl_def by blast
+  hence points_to_2: "(store_and_heap I x2) = Some (store_vector (store I) y2)"
+    by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1)
+  have equality:"store I x1 = store I x2"
+    by (metis asm assms(1) evaluation.simps(3) literal_evl_def literal_set_evl_def 
+        minterm_evl_def pos_literal_inv test_formulae.intros(4))
+  from points_to_1 and points_to_2 and equality have "(store_vector (store I) y1) = (store_vector (store I) y2)"
+    by (simp add: store_and_heap_def)
+  hence "(store I) (y1 $ i) = (store I) (y2 $ i)"
+    using equality_store_vector by blast
+  have "(y1 $ i) \<in> (minterm_var_set M)" using asm
+
+
+  show  "to_literal (eq (y1 $ i) (y2 $ i)) \<in> to_literal_set M"
+
+
 
 
 end
