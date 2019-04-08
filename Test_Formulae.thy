@@ -223,9 +223,6 @@ typedef ('var, 'k::finite) literal
   = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae}"
   using test_formulae.intros(3) by force
 
-(* definition literals :: "('var, 'k::finite) sl_formula set"
-  where "literals = ({f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae})" *)
-
 
 subsubsection {* Literals Functions *}
 
@@ -344,6 +341,12 @@ definition literal_complement :: "('var, 'k::finite) literal \<Rightarrow> ('var
   where "literal_complement l = to_literal (sl_formula_complement (to_sl_formula l))"
 
 
+subsection {* Literal Var Set *}
+
+definition literal_var_set :: "('var, 'k::finite) literal \<Rightarrow> 'var set"
+  where "literal_var_set l =  var_set (to_sl_formula l)"
+
+
 subsection {* Literals Evaluation *}
 
 definition literal_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal \<Rightarrow> bool"
@@ -351,6 +354,23 @@ definition literal_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var
 
 definition literal_set_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal set \<Rightarrow> bool"
   where "literal_set_evl I S = (\<forall>l\<in>S. literal_evl I l)"
+
+
+subsection {* Literal Footprint *}
+
+definition av :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
+  where "av T = {x1 | x1 x2. (to_literal (eq x1 x2) \<in> T)
+                           \<and> (T \<inter> ({to_literal (alloc x2)} \<union> {to_literal (points_to x2 y) | y. True})) \<noteq> {}}"
+
+definition nv :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
+  where "nv T = {x1 | x1 x2. (to_literal (eq x1 x2) \<in> T)
+                           \<and> (to_literal (not (alloc x2))) \<in> T}"
+
+definition fp_x :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
+  where "fp_x X T = T \<inter> ({to_literal (alloc x) | x. x\<in>X}
+                       \<union> {to_literal (not (alloc x)) | x. x\<in>X}
+                       \<union> {to_literal (points_to x y) | x y. x\<in>X}
+                       \<union> {to_literal (not (points_to x y)) | x y. x\<in>X})"
 
 
 subsubsection {* Useful Literals Results *}
@@ -428,6 +448,5 @@ proof -
   hence "evaluation I (not (ext_card_heap_ge (enat n)))" by simp
   thus ?thesis by blast
 qed
-
 
 end

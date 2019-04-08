@@ -173,6 +173,12 @@ definition minterm_complement :: "('var, 'k::finite) minterm \<Rightarrow> ('var
   where "minterm_complement M = (to_minterm {(literal_complement l) | l. l\<in>(to_literal_set M)})"
 
 
+subsection {* Minterm Var Set *}
+
+definition minterm_var_set :: "('var, 'k::finite) minterm \<Rightarrow> 'var set"
+  where "minterm_var_set M = {x. \<exists>l\<in>(to_literal_set M).  x\<in>(literal_var_set l)}"
+
+
 subsection {* Minterms Lemmas *}
 
 lemma minterm_have_ext_card_heap_ge:
@@ -364,25 +370,26 @@ subsection {* Closures Definitions *}
 subsubsection {* Complement Closure *}
 
 definition cc :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
-  where "cc M = (to_literal_set M) \<union> ({literal_complement l | l. l\<in>(to_literal_set M)})"
+  where "cc M = (to_literal_set M) \<union> {literal_complement l | l. l\<in>(to_literal_set M)}"
 
 
 subsubsection {* Points-to Closure *}
 
 definition pc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
-  where "pc M = (\<forall>l1\<in>(to_literal_set M). \<forall>x1. \<forall>y1. \<forall>l2\<in>(to_literal_set M). \<forall>x2. \<forall>y2. \<exists>l\<in>(to_literal_set M).
-                 ((l1 = to_literal (points_to x1 y2))
-               \<and> (l2 = to_literal (points_to x2 y2))
-               \<and> (l = to_literal (eq x1 x2)))
-             \<longrightarrow> (y1 = y2))"
+  where "pc M = (\<forall>x1. \<forall>y1. \<forall>x2. \<forall>y2.
+                 (((to_literal (points_to x1 y1)) \<in> (to_literal_set M))
+               \<and> ((to_literal (points_to x2 y2)) \<in> (to_literal_set M))
+               \<and> ((to_literal (eq x1 x2)) \<in> (to_literal_set M))
+             \<longrightarrow> (\<forall>i::'k. (to_literal (eq (y1$i) (y2$i))) \<in> (to_literal_set M))))"
+(* TODO : to_literal not eq y1$i y2$i \notin to_literal M  ? *)
 
 subsubsection {* Domain Closure *}
 
 definition dc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
-  where "dc M = (\<exists>l1\<in>(to_literal_set M). \<exists>n1. \<exists>l2\<in>(to_literal_set M). \<exists>n2.
-                (l1 = to_literal (ext_card_heap_ge n1))
-              \<and> (l2 = to_literal (not (ext_card_heap_ge n2)))
-              \<and> (n1 < n2))"
+  where "dc M = (\<forall>n1 n2.
+                ((to_literal (ext_card_heap_ge n1)) \<in> (to_literal_set M)
+               \<and> (to_literal (not (ext_card_heap_ge n2)) \<in> (to_literal_set M)))
+            \<longrightarrow> (n1 < n2))"
 
 
 subsection {* Minterms Propositions *}
@@ -415,7 +422,7 @@ proof -
 qed
 
 
-subsubsection {* Proposition 6 *}
+subsubsection {* Proposition 7 *}
 
 
 

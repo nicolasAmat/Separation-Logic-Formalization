@@ -59,4 +59,20 @@ fun sl_formula_complement :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var 
       | "sl_formula_complement l = (not l)"
 
 
+subsection {* Var Set *}
+
+fun var_set :: "('var, 'k::finite) sl_formula \<Rightarrow> 'var set"
+  where 
+    "var_set sl_true = {}"
+  | "var_set sl_false = {}"
+  | "var_set (eq x y) = {x, y}"
+  | "var_set (not P) = var_set P"
+  | "var_set (conj P Q) = var_set P \<union> var_set Q"
+  | "var_set (exists x P) = var_set P"
+  | "var_set (sl_emp) = {}"
+  | "var_set (sl_mapsto x y) = {x} \<union> {y$i | i. True}"
+  | "var_set (sl_conj P Q) = var_set P \<union> var_set Q"
+  | "var_set (sl_magic_wand P Q) = var_set P \<union> var_set Q"
+
+
 end
