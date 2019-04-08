@@ -370,7 +370,7 @@ definition cc :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal se
 subsubsection {* Points-to Closure *}
 
 definition pc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
-  where "pc M = (\<forall>l1\<in>(to_literal_set M). \<exists>x1. \<exists>y1. \<forall>l2\<in>(to_literal_set M). \<exists>x2. \<exists>y2. \<exists>l\<in>(to_literal_set M).
+  where "pc M = (\<forall>l1\<in>(to_literal_set M). \<forall>x1. \<forall>y1. \<forall>l2\<in>(to_literal_set M). \<forall>x2. \<forall>y2. \<exists>l\<in>(to_literal_set M).
                  ((l1 = to_literal (points_to x1 y2))
                \<and> (l2 = to_literal (points_to x2 y2))
                \<and> (l = to_literal (eq x1 x2)))
