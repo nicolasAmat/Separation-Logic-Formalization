@@ -476,4 +476,23 @@ proof (intro allI conjI impI)
 qed
 
 
+lemma minterm_prop7_dc:
+  fixes I::"('var, 'addr, 'k::finite) interp"
+    and M::"('var, 'k) minterm"
+  assumes "minterm_evl I M"
+    and "E_complete (minterm_var_set M) M"
+  shows "dc M" unfolding dc_def
+proof
+  obtain l1 and n1 where "l1\<in>(to_literal_set M)" and "l1 = to_literal (ext_card_heap_ge n1)"
+    by (metis Rep_literal_inverse minterm_have_ext_card_heap_ge to_literal_def to_sl_formula_def)
+  obtain l2 and n2 where "l2\<in>(to_literal_set M)" and "l2 = to_literal (not (ext_card_heap_ge n2))"
+    by (metis literal_atom_cases_tmp minterm_have_not_ext_card_heap_ge neg_literal_inv pos_literal_inv to_atom_is_test_formula)
+  have "literal_evl I l1"
+    using \<open>l1 \<in> Minterm.to_literal_set M\<close> assms(1) literal_set_evl_def minterm_evl_def by blast
+  moreover have "literal_evl I l2"
+    using \<open>l2 \<in> Minterm.to_literal_set M\<close> assms(1) literal_set_evl_def minterm_evl_def by blast
+  ultimately have "n1 < n2"
+    sorry
+  oops
+
 end
