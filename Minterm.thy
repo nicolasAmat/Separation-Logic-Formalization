@@ -430,7 +430,11 @@ lemma test:
 proof
   have "to_literal (sl_conj (sl_mapsto x y) sl_true) \<in> to_literal_set M"
     by (metis assms points_to_def)
+  hence "literal_var_set  (to_literal (sl_conj (sl_mapsto x y) sl_true)) \<subseteq> (minterm_var_set M)"
+    using minterm_var_set_def by fastforce
   hence "var_set (sl_mapsto x y) \<subseteq> (minterm_var_set M)"
+    by (metis Un_subset_iff literal_var_set_def points_to_def pos_literal_inv test_formulae.intros(1) var_set.simps(9))
+  oops
 
 lemma minterm_prop7_pc:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -462,7 +466,7 @@ proof (intro allI conjI impI)
 
 
   show  "to_literal (eq (y1 $ i) (y2 $ i)) \<in> to_literal_set M"
-
+    oops
 
 
 
