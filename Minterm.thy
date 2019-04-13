@@ -388,7 +388,7 @@ subsubsection {* Domain Closure *}
 definition dc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
   where "dc M = (\<forall>n1 n2.
                 ((to_literal (ext_card_heap_ge n1)) \<in> (to_literal_set M)
-               \<and> (to_literal (not (ext_card_heap_ge n2)) \<in> (to_literal_set M)))
+              \<and> (to_literal (not (ext_card_heap_ge n2))) \<in> (to_literal_set M))
             \<longrightarrow> (n1 < n2))"
 
 
@@ -447,7 +447,7 @@ lemma minterm_prop7_pc:
   assumes "minterm_evl I M"
     and "E_complete (minterm_var_set M) M"
   shows "pc M" unfolding pc_def
-proof (intro allI conjI impI)
+proof (intro allI impI)
   fix x1 y1 x2 y2 i
   assume asm: "to_literal (points_to x1 y1) \<in> to_literal_set M
              \<and> to_literal (points_to x2 y2) \<in> to_literal_set M
@@ -475,24 +475,50 @@ proof (intro allI conjI impI)
     by (meson E_complete_def asm assms(1) assms(2) literal_set_evl_def minterm_evl_def points_to_var_set)
 qed
 
+lemma card_heap_bounded:
+  assumes "evaluation I (ext_card_heap_ge n1)"
+    and "evaluation I (not (ext_card_heap_ge n2))"
+  shows "n1 < n2"
+proof -
+  have "evaluation I (ext_card_heap_ge n1)"
+    by (simp add: assms(1))
+  moreover have "\<not>(evaluation I (ext_card_heap_ge n2))"
+    using assms(2) by auto
+  ultimately show "n1 < n2"
+    by (simp add: tf_prop_3)
+qed
 
 lemma minterm_prop7_dc:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and M::"('var, 'k) minterm"
   assumes "minterm_evl I M"
     and "E_complete (minterm_var_set M) M"
-  shows "dc M" unfolding dc_def
-proof
-  obtain l1 and n1 where "l1\<in>(to_literal_set M)" and "l1 = to_literal (ext_card_heap_ge n1)"
-    by (metis Rep_literal_inverse minterm_have_ext_card_heap_ge to_literal_def to_sl_formula_def)
-  obtain l2 and n2 where "l2\<in>(to_literal_set M)" and "l2 = to_literal (not (ext_card_heap_ge n2))"
-    by (metis literal_atom_cases_tmp minterm_have_not_ext_card_heap_ge neg_literal_inv pos_literal_inv to_atom_is_test_formula)
+  shows "dc M"
+proof -
+  obtain l1 and n1 where l1_in_M :"l1 \<in> (to_literal_set M)" 
+                     and l1_def: "l1 = to_literal (ext_card_heap_ge n1)"
+    by (metis Rep_literal_inverse minterm_have_ext_card_heap_ge to_literal_def to_sl_formula_def) 
+  obtain l2 and n2 where l2_in_M: "l2 \<in> (to_literal_set M)"
+                     and l2_def: "l2 = to_literal (not (ext_card_heap_ge n2))"
+    by (metis literal_atom_cases_tmp minterm_have_not_ext_card_heap_ge neg_literal_inv pos_literal_inv to_atom_is_test_formula)  
   have "literal_evl I l1"
-    using \<open>l1 \<in> Minterm.to_literal_set M\<close> assms(1) literal_set_evl_def minterm_evl_def by blast
+    using assms(1) l1_in_M literal_set_evl_def minterm_evl_def by blast
   moreover have "literal_evl I l2"
-    using \<open>l2 \<in> Minterm.to_literal_set M\<close> assms(1) literal_set_evl_def minterm_evl_def by blast
+    using assms(1) l2_in_M literal_set_evl_def minterm_evl_def by blast
   ultimately have "n1 < n2"
-    sorry
-  oops
+    by (simp add: card_heap_bounded l1_def l2_def literal_evl_def test_formulae.intros(3))
+  thus "dc M"
+    by (metis assms(1) card_heap_bounded dc_def literal_evl_def literal_set_evl_def minterm_evl_def 
+        neg_literal_inv pos_literal_inv test_formulae.intros(3))
+qed
+
+lemma minterm_prop7:
+  fixes I::"('var, 'addr, 'k::finite) interp"
+    and M::"('var, 'k) minterm"
+  assumes "minterm_evl I M"
+    and "E_complete (minterm_var_set M) M"
+  shows "pc M \<and> dc M"
+  using assms(1) assms(2) minterm_prop7_dc minterm_prop7_pc by blast
+
 
 end
