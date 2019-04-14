@@ -392,6 +392,17 @@ definition dc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
             \<longrightarrow> (n1 < n2))"
 
 
+subsection {* Footprint-Consistency *}
+
+definition footprint_consistent :: "('var, 'k::finite) minterm \<Rightarrow> bool"
+  where "footprint_consistent M = (\<forall>x1 x2 y1 y2.
+                                  (to_literal (eq x1 x2) \<in> (to_literal_set M))
+                                \<and> (\<forall>i::'k. to_literal (eq (y1 $ i) (y2 $ i)) \<in> (to_literal_set M))
+                                \<and> (to_literal (alloc x1) \<in> (to_literal_set M) \<longrightarrow> to_literal (not (alloc x2)) \<notin> (to_literal_set M))
+                                \<and> (to_literal (points_to x1 y1) \<in> (to_literal_set M) \<longrightarrow> (to_literal (not (alloc x2)) \<notin> (to_literal_set M) 
+                                                                                        \<and> to_literal (not (points_to x2 y2)) \<notin> (to_literal_set M))))"
+
+
 subsection {* Minterms Propositions *}
 
 subsubsection {* Proposition 5 *}
