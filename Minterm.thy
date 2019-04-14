@@ -532,4 +532,19 @@ lemma minterm_prop7:
   using assms(1) assms(2) minterm_prop7_dc minterm_prop7_pc by blast
 
 
+subsubsection {* Proposition 9 *}
+
+lemma minterm_prop9_not_E_complete:
+  fixes M::"('var, 'k::finite) minterm"
+  assumes "footprint_consistent M"
+  shows "nv (to_literal_set M) \<inter> av (to_literal_set M) = {}"
+proof (rule rev_notE)
+  let ?P = "nv (to_literal_set M) \<inter> av (to_literal_set M) = {}"
+  assume "nv (to_literal_set M) \<inter> av (to_literal_set M) \<noteq> {}"
+  hence "\<exists>x x1 x2. (to_literal (not (alloc x1)) \<in> (to_literal_set M))
+               \<and> (to_literal (alloc x2) \<in> (to_literal_set M))
+               \<and> (to_literal (eq x x1) \<in> (to_literal_set M))
+               \<and> (to_literal (eq x x2) \<in> (to_literal_set M))"
+    oops
+
 end
