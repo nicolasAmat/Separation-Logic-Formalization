@@ -538,13 +538,22 @@ lemma minterm_prop9_not_E_complete:
   fixes M::"('var, 'k::finite) minterm"
   assumes "footprint_consistent M"
   shows "nv (to_literal_set M) \<inter> av (to_literal_set M) = {}"
-proof (rule rev_notE)
-  let ?P = "nv (to_literal_set M) \<inter> av (to_literal_set M) = {}"
-  assume "nv (to_literal_set M) \<inter> av (to_literal_set M) \<noteq> {}"
-  hence "\<exists>x x1 x2. (to_literal (not (alloc x1)) \<in> (to_literal_set M))
-               \<and> (to_literal (alloc x2) \<in> (to_literal_set M))
-               \<and> (to_literal (eq x x1) \<in> (to_literal_set M))
-               \<and> (to_literal (eq x x2) \<in> (to_literal_set M))"
-    oops
+proof (rule ccontr)
+  assume asm: "nv (to_literal_set M) \<inter> av (to_literal_set M) \<noteq> {}"
+  from asm obtain x x1 where nv_1: "x \<in> (nv (to_literal_set M)) \<inter> av (to_literal_set M)"
+                         and nv_2: "to_literal (eq x x1) \<in> (to_literal_set M)"
+                         and nv_3: "to_literal (not (alloc x1)) \<in> (to_literal_set M)"
+    unfolding nv_def
+    by blast
+  from asm and nv_1 and nv_2 and nv_3 obtain x2 where av_1: "to_literal (eq x x2) \<in> (to_literal_set M)" 
+      and av_2:"(to_literal_set M)\<inter>({to_literal (alloc x2)} \<union> {to_literal (points_to x2 y) | y. True}) \<noteq> {}"
+    unfolding av_def
+    by auto
+  hence "\<not>(footprint_consistent M)"
+    using footprint_consistent_def nv_3 by fastforce
+  thus False
+    using assms by simp
+qed
+
 
 end
