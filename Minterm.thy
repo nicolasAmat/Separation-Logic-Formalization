@@ -555,5 +555,102 @@ proof (rule ccontr)
     using assms by simp
 qed
 
+lemma eq_var_set:
+  assumes "to_literal (eq x y) \<in> to_literal_set M"
+  shows "(x \<in> (minterm_var_set M)) \<and> (y \<in> (minterm_var_set M))"
+proof -
+  have "x \<in> var_set (eq x y) \<and> y \<in> var_set (eq x y)"
+    by simp
+  hence "x \<in> literal_var_set (to_literal (eq x y)) \<and> y \<in> literal_var_set (to_literal (eq x y))"
+    by (simp add: literal_var_set_def test_formulae.intros(4))
+  thus "x \<in> (minterm_var_set M) \<and> y \<in> (minterm_var_set M)"
+    using assms minterm_var_set_def by fastforce
+qed
+
+lemma three_eq_sat:
+  fixes M::"('var, 'k::finite) minterm"
+    and I::"('var, 'addr, 'k) interp"
+    and x1::'var
+    and x2::'var
+    and x3::'var
+  assumes "to_literal (eq x1 x2) \<in> (to_literal_set M)"
+    and "to_literal (eq x2 x3) \<in> (to_literal_set M)"
+    and "minterm_evl I M"
+    and "E_complete (minterm_var_set M) M"
+  shows "to_literal (eq x1 x3) \<in> (to_literal_set M)"
+proof -
+  have "x1 \<in> (minterm_var_set M)"
+    by (meson assms(1) eq_var_set)
+  moreover have "x2 \<in> (minterm_var_set M)"
+    by (meson assms(1) eq_var_set)
+  moreover have "E_complete (minterm_var_set M) M"
+    by (simp add: assms(4))
+  ultimately have "to_literal (eq x1 x3) \<in> (to_literal_set M) \<or> to_literal (not (eq x1 x3)) \<in> (to_literal_set M)"
+    by (meson E_complete_def assms(2) eq_var_set)
+  moreover have "evaluation I (eq x1 x3)"
+    by (metis assms(1) assms(2) assms(3) evaluation.simps(3) literal_evl_def literal_set_evl_def
+        minterm_evl_def pos_literal_inv test_formulae.intros(4))
+  moreover have "minterm_evl I M"
+    by (simp add: assms(3))
+  ultimately show "to_literal (eq x1 x3) \<in> (to_literal_set M)"
+    by (metis evaluation.simps(4) literal_evl_def literal_set_evl_def minterm_evl_def 
+        neg_literal_inv test_formulae.intros(4))
+qed
+
+lemma eq_av:
+  fixes M::"('var, 'k::finite) minterm"
+    and I::"('var, 'addr, 'k) interp"
+    and x1::'var
+    and x2::'var
+  assumes "to_literal (eq x1 x2) \<in> (to_literal_set M)"
+    and "x2 \<in> av (to_literal_set M)"
+    and "minterm_evl I M"
+    and "E_complete (minterm_var_set M) M"
+  shows "x1 \<in> av (to_literal_set M)"
+proof -
+  have "x2 \<in> av (to_literal_set M)"
+    by (simp add: assms(2))
+  from this obtain x3 
+    where "to_literal (eq x2 x3) \<in> (to_literal_set M)"
+      and alloc_points_to_x3: "((to_literal_set M) \<inter> ({to_literal (alloc x3)} 
+                                                    \<union> {to_literal (points_to x3 y) | y. True})) \<noteq> {}"
+    unfolding av_def
+    by blast
+  hence eq_x3: "to_literal (eq x1 x3) \<in> (to_literal_set M)"
+    by (meson assms(1) assms(3) assms(4) three_eq_sat)
+  thus  "x1 \<in> av (to_literal_set M)" using av_def alloc_points_to_x3
+    by force
+qed
+
+lemma minterm_prop9_E_complete:
+  fixes M::"('var, 'k::finite) minterm"
+  assumes "footprint_consistent M"
+    and "E_complete (minterm_var_set M) M"
+    and "X \<inter> (av (to_literal_set M)) = {}"
+    and "minterm_evl I M"
+  shows "(store_set (store I) X) \<inter> (store_set (store I) (av (to_literal_set M))) = {}"
+proof (rule ccontr)
+  assume "(store_set (store I) X) \<inter> (store_set (store I) (av (to_literal_set M))) \<noteq> {}"
+  from this obtain l where "l \<in> (store_set (store I) X)"
+                       and "l \<in> (store_set (store I) (av (to_literal_set M)))"
+    by blast
+  from this obtain x1 x2 where x1_in: "x1 \<in> X"
+                           and x2_in: "x2 \<in> (av (to_literal_set M))"
+                           and x1_def: "store I x1 = l"
+                           and x2_def: "store I x2 = l"
+    by (metis antecedent_store_set)
+  have e_com:"E_complete (minterm_var_set M) M"
+    by (simp add: assms(2))
+  hence cases: "to_literal (eq x1 x2) \<in> (to_literal_set M) \<or> to_literal (not (eq x1 x2)) \<in> (to_literal_set M)"
+    using assms(1) footprint_consistent_def by force
+  from x2_in and e_com have case_1: "to_literal (eq x1 x2) \<in> (to_literal_set M) \<longrightarrow> x1 \<in> (av (to_literal_set M))"
+    by (meson assms(4) eq_av)
+  have case_2: "to_literal (not (eq x1 x2)) \<in> (to_literal_set M) \<longrightarrow> \<not>(minterm_evl I M)"
+    by (metis evaluation.simps(3) evaluation.simps(4) literal_evl_def literal_set_evl_def 
+        minterm_evl_def neg_literal_inv test_formulae.intros(4) x1_def x2_def)
+  from cases and case_1 and case_2 show False
+    using assms(3) assms(4) x1_in by blast
+qed
+
 
 end

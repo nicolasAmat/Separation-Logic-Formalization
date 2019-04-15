@@ -120,6 +120,25 @@ proof
 qed
 
 
+subsection {* Store Applied on a Set *}
+
+definition store_set :: "('var \<Rightarrow> 'addr) \<Rightarrow> 'var set \<Rightarrow> 'addr set"
+  where "store_set s X = {s x | x. x \<in> X}"
+
+lemma antecedent_store_set:
+  fixes I::"('var, 'addr, 'k::finite) interp"
+    and X::"'var set"
+    and l::"'addr"
+  assumes "l \<in> (store_set (store I) X)"
+  shows "\<exists>x. l = store I x \<and> x \<in> X"
+proof -
+  have "l \<in> {store I x |x. x \<in> X}"
+    using assms store_set_def by force
+  then show ?thesis
+    by blast
+qed
+
+
 subsection {* Useful Heaps Results *}
 
 lemma finite_union_heaps:
