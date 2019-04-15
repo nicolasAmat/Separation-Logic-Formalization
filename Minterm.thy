@@ -452,7 +452,7 @@ proof
     by blast
 qed
 
-lemma minterm_prop7_pc:
+lemma minterm_prop_7_pc:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and M::"('var, 'k) minterm"
   assumes "minterm_evl I M"
@@ -466,11 +466,11 @@ proof (intro allI impI)
   have "literal_evl I (to_literal (points_to x1 y1))"
     using asm assms(1) literal_set_evl_def minterm_evl_def by blast
   hence points_to_1: "(store_and_heap I x1) = Some (store_vector (store I) y1)"
-    by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1)
+    by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1_1)
   have "literal_evl I (to_literal (points_to x2 y2))"
     using asm assms(1) literal_set_evl_def minterm_evl_def by blast
   hence points_to_2: "(store_and_heap I x2) = Some (store_vector (store I) y2)"
-    by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1)
+    by (simp add: literal_evl_def test_formulae.intros(1) tf_prop_1_1)
   have equality_x: "store I x1 = store I x2"
     by (metis asm assms(1) evaluation.simps(3) literal_evl_def literal_set_evl_def 
         minterm_evl_def pos_literal_inv test_formulae.intros(4))
@@ -496,10 +496,10 @@ proof -
   moreover have "\<not>(evaluation I (ext_card_heap_ge n2))"
     using assms(2) by auto
   ultimately show "n1 < n2"
-    by (simp add: tf_prop_3)
+    by (simp add: tf_prop_1_3)
 qed
 
-lemma minterm_prop7_dc:
+lemma minterm_prop_7_dc:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and M::"('var, 'k) minterm"
   assumes "minterm_evl I M"
@@ -529,12 +529,12 @@ lemma minterm_prop7:
   assumes "minterm_evl I M"
     and "E_complete (minterm_var_set M) M"
   shows "pc M \<and> dc M"
-  using assms(1) assms(2) minterm_prop7_dc minterm_prop7_pc by blast
+  using assms(1) assms(2) minterm_prop_7_dc minterm_prop_7_pc by blast
 
 
 subsubsection {* Proposition 9 *}
 
-lemma minterm_prop9_not_E_complete:
+lemma minterm_prop_9_not_E_complete:
   fixes M::"('var, 'k::finite) minterm"
   assumes "footprint_consistent M"
   shows "nv (to_literal_set M) \<inter> av (to_literal_set M) = {}"
@@ -622,7 +622,7 @@ proof -
     by force
 qed
 
-lemma minterm_prop9_E_complete:
+lemma minterm_prop_9_E_complete:
   fixes M::"('var, 'k::finite) minterm"
   assumes "footprint_consistent M"
     and "E_complete (minterm_var_set M) M"

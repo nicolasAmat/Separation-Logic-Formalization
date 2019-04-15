@@ -33,7 +33,7 @@ fun card_heap_ge :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
       "card_heap_ge (Suc n) = sl_conj (card_heap_ge n) (not sl_emp)"
     | "card_heap_ge 0 = sl_true"
 
-primrec ext_card_heap_ge ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
+fun ext_card_heap_ge ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where
       "ext_card_heap_ge \<infinity> = sl_false"
     | "ext_card_heap_ge n = card_heap_ge n"
@@ -51,9 +51,9 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
 
 subsection {* Propositions *}
 
-subsubsection {* Proposition 1 *}
+subsubsection {* Proposition 1 Part 1 *}
 
-lemma tf_prop_1:
+lemma tf_prop_1_1:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
     and y::"('var, 'k) vec"
@@ -95,9 +95,9 @@ next
 qed
 
 
-subsubsection {* Proposition 2 *}
+subsubsection {* Proposition 1 Part 2 *}
 
-lemma tf_prop_2:
+lemma tf_prop_1_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and x::"'var"
   shows "(evaluation I (alloc x)) 
@@ -132,9 +132,9 @@ next
 qed
 
 
-subsubsection {* Proposition 3 *}
+subsubsection {* Proposition 1 Part 3 *}
 
-lemma tf_prop_3:
+lemma tf_prop_1_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
     and n::enat
   shows "(evaluation I (ext_card_heap_ge n))
@@ -366,8 +366,8 @@ definition nv :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
   where "nv T = {x1 | x1 x2. (to_literal (eq x1 x2) \<in> T)
                            \<and> (to_literal (not (alloc x2))) \<in> T}"
 
-definition fp_x :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
-  where "fp_x X T = T \<inter> ({to_literal (alloc x) | x. x\<in>X}
+definition fp :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
+  where "fp X T = T \<inter> ({to_literal (alloc x) | x. x\<in>X}
                        \<union> {to_literal (not (alloc x)) | x. x\<in>X}
                        \<union> {to_literal (points_to x y) | x y. x\<in>X}
                        \<union> {to_literal (not (points_to x y)) | x y. x\<in>X})"
@@ -411,7 +411,7 @@ proof -
   define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
   define I where "I = to_interp store mheap"
   have "evaluation I (ext_card_heap_ge (enat n))" 
-  proof (rule tf_prop_3[THEN iffD2])
+  proof (rule tf_prop_1_3[THEN iffD2])
     have "card_heap (heap I) = card (h_dom mheap)" unfolding card_heap_def unfolding I_def
       by (simp add: heap_def to_interp_def)
     also have "... = card A" using \<open>h_dom mheap = A\<close> by simp
@@ -443,10 +443,24 @@ proof -
     by (simp add: h_dom_empty_heap heap_def to_interp_def)
   also have "card (h_dom h_empty) = 0" by (simp add: h_dom_empty_heap) 
   finally have "card_heap (heap I) = 0" by (simp add: zero_enat_def)
-  hence "\<not> evaluation I (ext_card_heap_ge (enat n))" using tf_prop_3 assms
+  hence "\<not> evaluation I (ext_card_heap_ge (enat n))" using tf_prop_1_3 assms
     by (metis enat_ord_simps(1) not_less_eq_eq zero_enat_def)
   hence "evaluation I (not (ext_card_heap_ge (enat n)))" by simp
   thus ?thesis by blast
 qed
+
+subsection {* Propostions *}
+
+subsubsection {* Propostion 3 *}
+
+lemma tf_prop_3:
+  fixes T::"('var, 'k::finite) literal set"
+    and I::"('var, 'addr, 'k) interp"
+    and a::"'var set"
+  assumes "literal_set_evl I (fp a T)"
+  shows "\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp a T)"
+
+  oops
+
 
 end
