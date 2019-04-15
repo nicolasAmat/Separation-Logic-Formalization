@@ -368,9 +368,9 @@ definition nv :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
 
 definition fp :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
   where "fp X T = T \<inter> ({to_literal (alloc x) | x. x\<in>X}
-                       \<union> {to_literal (not (alloc x)) | x. x\<in>X}
-                       \<union> {to_literal (points_to x y) | x y. x\<in>X}
-                       \<union> {to_literal (not (points_to x y)) | x y. x\<in>X})"
+                     \<union> {to_literal (not (alloc x)) | x. x\<in>X}
+                     \<union> {to_literal (points_to x y) | x y. x\<in>X}
+                     \<union> {to_literal (not (points_to x y)) | x y. x\<in>X})"
 
 
 subsubsection {* Useful Literals Results *}
@@ -459,7 +459,8 @@ lemma tf_prop_3:
     and a::"'var set"
   assumes "literal_set_evl I (fp a T)"
   shows "\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp a T)"
-
+proof
+  fix h
   oops
 
 
