@@ -456,9 +456,8 @@ subsubsection {* Propostion 3 *}
 lemma tf_prop_3:
   fixes T::"('var, 'k::finite) literal set"
     and I::"('var, 'addr, 'k) interp"
-    and a::"'var set"
-  assumes "literal_set_evl I (fp a T)"
-  shows "\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp a T)"
+  assumes "literal_set_evl I (fp (av T) T)"
+  shows "\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T)"
 proof
   fix h
   oops
