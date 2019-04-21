@@ -449,18 +449,61 @@ proof -
   thus ?thesis by blast
 qed
 
+(*
 subsection {* Propostions *}
 
 subsubsection {* Propostion 3 *}
+
+lemma extended_heap_alloc:
+  assumes "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (alloc x))"
+  shows "\<not>(evaluation I (alloc x))"
+proof -
+  have "h_dom (heap I) \<subseteq> h_dom (union_heaps (heap I) h)"
+    by (simp add: sub_heap_included)
+  thus "\<not>(evaluation I (alloc x))"
+    by (metis assms heap_on_to_interp set_mp store_on_to_interp tf_prop_1_2)
+qed
+
+lemma extended_heap_points_to:
+  assumes "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (points_to x y))"
+  shows "\<not>(evaluation I (points_to x y))"
+proof -
+  have 1:"h_dom (heap I) \<subseteq> h_dom (union_heaps (heap I) h)"
+    by (simp add: sub_heap_included)
+  have "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (sl_conj (sl_mapsto x y) sl_true))"
+    by (metis assms points_to_def)
+  from this and 1 have "\<not>(\<exists>h1 h2. (union_heaps h1 h2 = heap I)
+                 \<and> (disjoint_heaps h1 h2) 
+                 \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y)) 
+                 \<and> (evaluation (to_interp (store I) h2) sl_true))"
+    sorry
+  show "\<not>(evaluation I (points_to x y))"
+    sorry
+qed
 
 lemma tf_prop_3:
   fixes T::"('var, 'k::finite) literal set"
     and I::"('var, 'addr, 'k) interp"
   assumes "literal_set_evl I (fp (av T) T)"
   shows "\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T)"
-proof
-  fix h
-  oops
+proof (rule ccontr)
+  assume "\<not> (\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
+  from this obtain h where "\<not>(literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
+    by blast
+  from this obtain l where l_in_fp: "l \<in> (fp (av T) T)"
+                      and l_evl: "\<not>(literal_evl (to_interp (store I) (union_heaps (heap I) h)) l)"
+    using literal_set_evl_def by blast
+  have case_1: "\<exists>x. l = to_literal (alloc x) \<longrightarrow> \<not>(literal_evl I l)"
+    by (metis extended_heap_alloc l_evl literal_evl_def pos_literal_inv test_formulae.intros(2))
+  have case_2: "\<exists>x y. l = to_literal (points_to x y) \<longrightarrow> \<not>(literal_evl I l)"
+    by (metis extended_heap_points_to l_evl literal_evl_def pos_literal_inv test_formulae.intros(1))
+    
 
+  from case_1  have "\<not>(literal_set_evl I (fp (av T) T))"
+    sorry
+  thus False
+    using assms by blast
+  oops
+*)
 
 end
