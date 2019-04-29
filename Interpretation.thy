@@ -14,7 +14,7 @@ imports
 begin
 
 
-subsection {* Heap *}
+subsection {* Heaps *}
 
 definition a_heap :: "('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> bool"
   where "a_heap h \<longleftrightarrow> finite (dom h)"
@@ -24,7 +24,7 @@ typedef ('addr, 'k) heaps = "{(h::'addr \<Rightarrow> (('addr, 'k) vec) option).
   using finite_dom_map_of by auto
 
 
-subsection {* Interpretation *}
+subsection {* Interpretations *}
 
 type_synonym ('var, 'addr, 'k) interp = "('var \<Rightarrow> 'addr) \<times> (('addr, 'k) heaps)"
 
@@ -96,6 +96,12 @@ subsection {* Heap Restriction *}
 
 definition restricted_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) heaps"
   where "restricted_heap h x = Abs_heaps ((Rep_heaps h_empty)(x := get_from_heap h x))"
+
+
+subsection {* Heap Cast *}
+
+definition to_heap :: "('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> ('addr, 'k) heaps"
+  where "to_heap h = (if (finite (dom h)) then Abs_heaps h else h_empty)"
 
 
 subsection {* Store Applied on a Vector *}
@@ -384,6 +390,14 @@ lemma restricted_heap_not_empty:
     then show ?thesis
       by (simp add: empty_heap_def)
 qed
+
+
+subsubsection {* Heap Cast *}
+
+lemma to_heap_domain:
+  assumes "finite (dom h)"
+  shows "h_dom (to_heap h) = dom h" unfolding h_dom_def dom_def to_heap_def using assms
+  by (simp add: Abs_heaps_inverse a_heap_def dom_def)
 
 
 subsubsection {* Store Applied on a Vector *}

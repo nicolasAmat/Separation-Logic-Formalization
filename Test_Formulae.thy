@@ -4,7 +4,7 @@
 
 section {* Test Formulae *}
 
-text {* This section contains test formulae. *}
+text {* This section contains the test formulas and literals. *}
 
 theory Test_Formulae
 imports
@@ -39,7 +39,7 @@ fun ext_card_heap_ge ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
     | "ext_card_heap_ge n = card_heap_ge n"
 
 
-subsection {* Inductive Set *}
+subsection {* Test Formulae Set *}
 
 inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
   where
@@ -49,7 +49,7 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
   | "(sl_eq x y) \<in> test_formulae"
 
 
-subsection {* Propositions *}
+subsection {* Proposition 1 *}
 
 subsubsection {* Proposition 1 Part 1 *}
 
@@ -215,16 +215,14 @@ next
 qed
 
 
-subsection {* Literal *}
-
-subsubsection {* Literals Definition *}
+subsection {* Literals Definition *}
 
 typedef ('var, 'k::finite) literal 
   = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(sl_not f)|f. f \<in> test_formulae}"
   using test_formulae.intros(1) by fastforce
 
 
-subsubsection {* Literals Functions *}
+subsection {* Literal Casts *}
 
 definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) sl_formula"
   where "to_sl_formula f = Rep_literal f"
@@ -235,13 +233,127 @@ definition to_literal :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var, 'k)
 definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('var, 'k) literal set"
   where "to_literal_set S = {to_literal x|x. True}"
 
-(* TODO : add section *)
+
+subsection {* Literal Atom *}
+
 fun remove_first_not :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
   where "remove_first_not (sl_not l) = l"
       | "remove_first_not l = l"
 
 definition to_atom :: "('var, 'k::finite) literal \<Rightarrow> ('var ,'k) sl_formula"
   where "to_atom l = remove_first_not (to_sl_formula l)"
+
+
+subsection {* Literal Complement *}
+
+definition literal_complement :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) literal"
+  where "literal_complement l = to_literal (sl_formula_complement (to_sl_formula l))"
+
+
+subsection {* Literal Var Set *}
+
+definition literal_var_set :: "('var, 'k::finite) literal \<Rightarrow> 'var set"
+  where "literal_var_set l =  var_set (to_sl_formula l)"
+
+
+subsection {* Literals Evaluation *}
+
+definition literal_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal \<Rightarrow> bool"
+  where "literal_evl I l = evaluation I (to_sl_formula l)"
+
+definition literal_set_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal set \<Rightarrow> bool"
+  where "literal_set_evl I S = (\<forall>l\<in>S. literal_evl I l)"
+
+
+subsection {* Literal Footprint *}
+
+definition av :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
+  where "av T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
+                           \<and> (T \<inter> ({to_literal (alloc x2)} \<union> {to_literal (points_to x2 y) | y. True})) \<noteq> {}}"
+
+definition nv :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
+  where "nv T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
+                           \<and> (to_literal (sl_not (alloc x2))) \<in> T}"
+
+definition fp :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
+  where "fp X T = T \<inter> ({to_literal (alloc x) | x. x \<in> X}
+                     \<union> {to_literal (sl_not (alloc x)) | x. x \<in> X}
+                     \<union> {to_literal (points_to x y) | x y. x \<in> X}
+                     \<union> {to_literal (sl_not (points_to x y)) | x y. x \<in> X})"
+
+
+subsection {* Useful Results *}
+
+subsubsection {* Cardinality Constraint *}
+
+lemma heap_card_domain_card:
+  fixes A::"'addr set"
+  assumes "finite A" and "n \<le> card A"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_ge (enat n))} \<noteq> {}"
+proof -
+  define hfct::"'addr \<Rightarrow> (('addr, 'k) vec) option" where "hfct = (\<lambda> a. (if a\<in> A then (Some (vec a)) else None))"
+  have "dom hfct = A" unfolding hfct_def dom_def by simp
+  define mheap where "mheap = to_heap hfct"
+  have "h_dom mheap = A" using assms to_heap_domain \<open>dom hfct = A\<close> by (metis mheap_def)
+  define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
+  define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
+  define I where "I = to_interp store mheap"
+  have "evaluation I (ext_card_heap_ge (enat n))" 
+  proof (rule tf_prop_1_3[THEN iffD2])
+    have "card_heap (heap I) = card (h_dom mheap)" unfolding card_heap_def unfolding I_def
+      by (simp add: heap_def to_interp_def)
+    also have "... = card A" using \<open>h_dom mheap = A\<close> by simp
+    also have "... \<ge>  n" using assms by simp
+    finally have "card_heap (heap I) \<ge>  n" .
+    thus "enat n \<le> card_heap (heap I)" by simp
+  qed
+  thus ?thesis by blast
+qed
+
+lemma heap_card_infinite_universe:
+  assumes "\<not>finite (UNIV::'addr set)"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_ge (enat n))} \<noteq> {}"
+proof -
+  have "\<exists> A::'addr set. finite A\<and> card A = n" using assms
+    using infinite_arbitrarily_large by blast
+  from this obtain A::"'addr set" where "finite A" and "card A = n" by auto
+  thus ?thesis using heap_card_domain_card[of A n] by simp
+qed
+
+lemma not_heap_card:
+  assumes "Suc 0 \<le> n"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (sl_not (ext_card_heap_ge (enat n)))} \<noteq> {}"
+proof -
+  define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
+  define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
+  define I::"('var, 'addr, 'k::finite) interp" where "I = to_interp store h_empty"
+  have "card_heap (heap I) = card (h_dom h_empty)" unfolding card_heap_def unfolding I_def
+    by (simp add: h_dom_empty_heap heap_def to_interp_def)
+  also have "card (h_dom h_empty) = 0" by (simp add: h_dom_empty_heap) 
+  finally have "card_heap (heap I) = 0" by (simp add: zero_enat_def)
+  hence "\<not> evaluation I (ext_card_heap_ge (enat n))" using tf_prop_1_3 assms
+    by (metis enat_ord_simps(1) not_less_eq_eq zero_enat_def)
+  hence "evaluation I (sl_not (ext_card_heap_ge (enat n)))" by simp
+  thus ?thesis by blast
+qed
+
+
+subsubsection {* Literal Casts *}
+
+lemma pos_literal_inv[simp]:
+  fixes f::"('var, 'k::finite) sl_formula"
+  assumes "f\<in> test_formulae"
+  shows "(to_sl_formula (to_literal f)) = f"
+by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
+
+lemma neg_literal_inv[simp]:
+  fixes f::"('var, 'k::finite) sl_formula"
+  assumes "f \<in> test_formulae"
+  shows "(to_sl_formula (to_literal (sl_not f))) = sl_not f"
+by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
+
+
+subsubsection {* Literal Atom *}
 
 lemma literal_atom_cases_tmp:
   "(to_literal (to_atom l) = l) \<or> to_literal (sl_not (to_atom l)) = l"
@@ -271,8 +383,6 @@ next
   hence "l = to_literal (sl_not (to_atom l))" using literal_atom_cases_tmp[of l] by simp
   thus ?thesis using that(2) by auto 
 qed
-
-
 
 lemma to_atom_is_test_formula:
   fixes l::"('var, 'k::finite) literal"
@@ -335,120 +445,6 @@ next
 qed
 
 
-subsection {* Literal Complement *}
-
-definition literal_complement :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) literal"
-  where "literal_complement l = to_literal (sl_formula_complement (to_sl_formula l))"
-
-
-subsection {* Literal Var Set *}
-
-definition literal_var_set :: "('var, 'k::finite) literal \<Rightarrow> 'var set"
-  where "literal_var_set l =  var_set (to_sl_formula l)"
-
-
-subsection {* Literals Evaluation *}
-
-definition literal_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal \<Rightarrow> bool"
-  where "literal_evl I l = evaluation I (to_sl_formula l)"
-
-definition literal_set_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal set \<Rightarrow> bool"
-  where "literal_set_evl I S = (\<forall>l\<in>S. literal_evl I l)"
-
-
-subsection {* Literal Footprint *}
-
-definition av :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
-  where "av T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
-                           \<and> (T \<inter> ({to_literal (alloc x2)} \<union> {to_literal (points_to x2 y) | y. True})) \<noteq> {}}"
-
-definition nv :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
-  where "nv T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
-                           \<and> (to_literal (sl_not (alloc x2))) \<in> T}"
-
-definition fp :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
-  where "fp X T = T \<inter> ({to_literal (alloc x) | x. x \<in> X}
-                     \<union> {to_literal (sl_not (alloc x)) | x. x \<in> X}
-                     \<union> {to_literal (points_to x y) | x y. x \<in> X}
-                     \<union> {to_literal (sl_not (points_to x y)) | x y. x \<in> X})"
-
-
-subsubsection {* Useful Literals Results *}
-
-lemma pos_literal_inv[simp]:
-  fixes f::"('var, 'k::finite) sl_formula"
-  assumes "f\<in> test_formulae"
-  shows "(to_sl_formula (to_literal f)) = f"
-by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
-
-lemma neg_literal_inv[simp]:
-  fixes f::"('var, 'k::finite) sl_formula"
-  assumes "f \<in> test_formulae"
-  shows "(to_sl_formula (to_literal (sl_not f))) = sl_not f"
-by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
-
-(* TODO *)
-
-definition to_heap::"('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> ('addr, 'k) heaps" where
-"to_heap h = (if (finite (dom h)) then Abs_heaps h else h_empty)"
-
-lemma to_heap_domain:
-  assumes "finite (dom h)"
-  shows "h_dom (to_heap h) = dom h" unfolding h_dom_def dom_def to_heap_def using assms
-  by (simp add: Abs_heaps_inverse a_heap_def dom_def)
-
-
-lemma heap_card_domain_card:
-  fixes A::"'addr set"
-  assumes "finite A" and "n \<le> card A"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_ge (enat n))} \<noteq> {}"
-proof -
-  define hfct::"'addr \<Rightarrow> (('addr, 'k) vec) option" where "hfct = (\<lambda> a. (if a\<in> A then (Some (vec a)) else None))"
-  have "dom hfct = A" unfolding hfct_def dom_def by simp
-  define mheap where "mheap = to_heap hfct"
-  have "h_dom mheap = A" using assms to_heap_domain \<open>dom hfct = A\<close> by (metis mheap_def)
-  define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
-  define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
-  define I where "I = to_interp store mheap"
-  have "evaluation I (ext_card_heap_ge (enat n))" 
-  proof (rule tf_prop_1_3[THEN iffD2])
-    have "card_heap (heap I) = card (h_dom mheap)" unfolding card_heap_def unfolding I_def
-      by (simp add: heap_def to_interp_def)
-    also have "... = card A" using \<open>h_dom mheap = A\<close> by simp
-    also have "... \<ge>  n" using assms by simp
-    finally have "card_heap (heap I) \<ge>  n" .
-    thus "enat n \<le> card_heap (heap I)" by simp
-  qed
-  thus ?thesis by blast
-qed
-
-lemma heap_card_infinite_universe:
-  assumes "\<not>finite (UNIV::'addr set)"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (ext_card_heap_ge (enat n))} \<noteq> {}"
-proof -
-  have "\<exists> A::'addr set. finite A\<and> card A = n" using assms
-    using infinite_arbitrarily_large by blast
-  from this obtain A::"'addr set" where "finite A" and "card A = n" by auto
-  thus ?thesis using heap_card_domain_card[of A n] by simp
-qed
-
-lemma not_heap_card:
-  assumes "Suc 0 \<le> n"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (sl_not (ext_card_heap_ge (enat n)))} \<noteq> {}"
-proof -
-  define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
-  define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
-  define I::"('var, 'addr, 'k::finite) interp" where "I = to_interp store h_empty"
-  have "card_heap (heap I) = card (h_dom h_empty)" unfolding card_heap_def unfolding I_def
-    by (simp add: h_dom_empty_heap heap_def to_interp_def)
-  also have "card (h_dom h_empty) = 0" by (simp add: h_dom_empty_heap) 
-  finally have "card_heap (heap I) = 0" by (simp add: zero_enat_def)
-  hence "\<not> evaluation I (ext_card_heap_ge (enat n))" using tf_prop_1_3 assms
-    by (metis enat_ord_simps(1) not_less_eq_eq zero_enat_def)
-  hence "evaluation I (sl_not (ext_card_heap_ge (enat n)))" by simp
-  thus ?thesis by blast
-qed
-
 (*
 subsection {* Propostions *}
 
@@ -505,5 +501,6 @@ proof (rule ccontr)
     using assms by blast
   oops
 *)
+
 
 end
