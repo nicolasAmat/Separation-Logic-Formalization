@@ -4,7 +4,7 @@
 
 section {* Interpretations *}
 
-text {* This section contains the formalization of an interpretations in the separation logic. *}
+text {* This section contains the formalization of an interpretation in the separation logic. *}
 
 theory Interpretation
 imports 
@@ -16,7 +16,7 @@ begin
 
 subsection {* Heap *}
 
-definition a_heap
+definition a_heap :: "('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> bool"
   where "a_heap h \<longleftrightarrow> finite (dom h)"
 
 typedef ('addr, 'k) heaps = "{(h::'addr \<Rightarrow> (('addr, 'k) vec) option). a_heap h}" 
@@ -56,6 +56,27 @@ definition store_and_heap :: "('var, 'addr, 'k) interp \<Rightarrow> 'var => ('a
   where "store_and_heap I x = get_from_heap (heap I) ((store I) x)"
 
 
+subsection {* Heap Operations *}
+
+definition h_dom :: "('addr, 'k) heaps \<Rightarrow> 'addr set"
+  where "h_dom h = {a. Rep_heaps h a \<noteq> None}"
+
+definition disjoint_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> bool"
+  where "disjoint_heaps h1 h2 \<longleftrightarrow> (h_dom h1) \<inter> (h_dom h2) = {}"
+
+definition union_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps"
+  where "union_heaps h1 h2 = Abs_heaps ((Rep_heaps h1) ++ (Rep_heaps h2))"
+
+definition equal_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> bool"
+  where "equal_heaps h1 h2 = ((Rep_heaps h1 \<subseteq>\<^sub>m Rep_heaps h2) \<and> (Rep_heaps h2 \<subseteq>\<^sub>m Rep_heaps h1))"
+
+definition empty_heap :: "('addr, 'k) heaps \<Rightarrow> bool"
+  where "empty_heap h = (Rep_heaps h = Map.empty)"
+
+definition card_heap :: "('addr, 'k) heaps \<Rightarrow> enat" 
+  where "card_heap h = card (h_dom h)"
+
+
 subsection {* Heap Constructors *}
 
 definition h_empty :: "('addr, 'k) heaps"
@@ -77,47 +98,13 @@ definition restricted_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarro
   where "restricted_heap h x = Abs_heaps ((Rep_heaps h_empty)(x := get_from_heap h x))"
 
 
-subsection {* Heaps Operations *}
-
-definition h_dom :: "('addr, 'k) heaps \<Rightarrow> 'addr set"
-  where "h_dom h = {a. Rep_heaps h a \<noteq> None}"
-
-definition disjoint_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> bool"
-  where "disjoint_heaps h1 h2 \<longleftrightarrow> (h_dom h1) \<inter> (h_dom h2) = {}"
-
-definition union_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps"
-  where "union_heaps h1 h2 = Abs_heaps ((Rep_heaps h1) ++ (Rep_heaps h2))"
-
-definition equal_heaps :: "('addr, 'k) heaps \<Rightarrow> ('addr, 'k) heaps \<Rightarrow> bool"
-  where "equal_heaps h1 h2 = ((Rep_heaps h1 \<subseteq>\<^sub>m Rep_heaps h2) \<and> (Rep_heaps h2 \<subseteq>\<^sub>m Rep_heaps h1))"
-
-definition empty_heap :: "('addr, 'k) heaps \<Rightarrow> bool"
-  where "empty_heap h = (Rep_heaps h = Map.empty)"
-
-definition card_heap :: "('addr, 'k) heaps \<Rightarrow> enat" 
-  where "card_heap h = card (h_dom h)"
-
-
 subsection {* Store Applied on a Vector *}
 
 definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> 'k \<Rightarrow> 'addr"
   where "addr_from_var_vector s v k = (s (vec_nth v k))"
 
-definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k::finite) vec"
+definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> ('addr, 'k) vec"
   where "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
-
-lemma equality_store_vector:
-  assumes "(store_vector s y1) = (store_vector s y2)"
-  shows "\<forall>i. s (y1 $ i) = s (y2 $ i)"
-proof
-  have "addr_from_var_vector s y2 = addr_from_var_vector s y2"
-    by simp
-  fix i
-  have "s (vec_nth y1 i) = s (vec_nth y2 i)"
-    by (metis UNIV_I addr_from_var_vector_def assms store_vector_def vec_lambda_inverse)
-  thus "s (y1 $ i) = s (y2 $ i)"
-    by simp
-qed
 
 
 subsection {* Store Applied on a Set *}
@@ -125,21 +112,64 @@ subsection {* Store Applied on a Set *}
 definition store_set :: "('var \<Rightarrow> 'addr) \<Rightarrow> 'var set \<Rightarrow> 'addr set"
   where "store_set s X = {s x | x. x \<in> X}"
 
-lemma antecedent_store_set:
-  fixes I::"('var, 'addr, 'k::finite) interp"
-    and X::"'var set"
-    and l::"'addr"
-  assumes "l \<in> (store_set (store I) X)"
-  shows "\<exists>x. l = store I x \<and> x \<in> X"
-proof -
-  have "l \<in> {store I x |x. x \<in> X}"
-    using assms store_set_def by force
-  then show ?thesis
-    by blast
-qed
+
+subsection {* Useful Results *}
+
+subsubsection {* Heap and Store from an Interpretation *}
+
+lemma store_on_to_interp:
+  fixes I::"('var, 'addr, 'k) interp"
+    and x::'var
+    and h::"('addr, 'k) heaps"
+  shows "store (to_interp (store I) h) = store I"
+  by (simp add: store_def to_interp_def)
+
+lemma heap_on_to_interp:
+  fixes I::"('var, 'addr, 'k) interp"
+    and h::"('addr, 'k) heaps"
+  shows "heap (to_interp (store I) h) = h"
+  by (simp add: heap_def to_interp_def)
 
 
-subsection {* Useful Heaps Results *}
+subsubsection {* Get Elements from an Heap *}
+
+lemma get_from_add_to_heap:
+  fixes x::'addr
+    and y::"('addr, 'k) vec"
+  shows "get_from_heap (add_to_heap h_empty x y) x = Some y"
+  by (simp add: Abs_heaps_inverse a_heap_def add_to_heap_def get_from_heap_def h_empty_def)
+
+
+subsubsection {* Consecutive Store and Heap on a Variable *}
+
+lemma store_and_heap_on_to_interp:
+  fixes I::"('var, 'addr, 'k) interp"
+  shows "store_and_heap (to_interp (store I) (heap I)) = store_and_heap I"
+  by (simp add: heap_def store_def to_interp_def)
+
+lemma store_and_heap_h:
+  fixes I::"('var, 'addr, 'k) interp"
+    and h::"('addr, 'k) heaps"
+    and x::'var
+  shows "store_and_heap (to_interp (store I) h) x = get_from_heap h ((store I) x)"
+  by (simp add: heap_on_to_interp store_and_heap_def store_on_to_interp)
+
+lemma dom_store_and_heap:
+  fixes I::"('var, 'addr , 'k) interp"
+    and x::'var
+    and y::"('addr , 'k) vec"
+  assumes "store_and_heap I x = Some y"
+  shows "((store I) x) \<in> h_dom (heap I)"
+  by (metis assms domIff dom_def get_from_heap_def h_dom_def option.simps(3) store_and_heap_def)
+
+lemma store_and_heap_with_Rep_heaps:
+  fixes I::"('var, 'addr, 'k) interp"
+    and x::'var
+  shows "store_and_heap I x = Rep_heaps (heap I) (store I x)"
+  by (simp add: get_from_heap_def store_and_heap_def)
+
+
+subsubsection {* Heap Operations *}
 
 lemma finite_union_heaps:
   fixes h1::"('addr, 'k) heaps"
@@ -156,36 +186,6 @@ lemma commutative_union_disjoint_heaps:
   shows "union_heaps h1 h2 = union_heaps h2 h1"
   by (metis (full_types) assms disjoint_heaps_def dom_def h_dom_def map_add_comm union_heaps_def) 
 
-
-subsection {* DRAFT *}
-
-lemma store_on_to_interp:
-  fixes I::"('var, 'addr, 'k) interp"
-    and x::'var
-    and h::"('addr, 'k) heaps"
-  shows "store (to_interp (store I) h) = store I"
-  by (simp add: store_def to_interp_def)
-
-lemma heap_on_to_interp:
-  fixes I::"('var, 'addr, 'k) interp"
-    and h::"('addr, 'k) heaps"
-  shows "heap (to_interp (store I) h) = h"
-  by (simp add: heap_def to_interp_def)
-
-(* remove? *)
-lemma store_and_heap_on_to_interp:
-  fixes I::"('var, 'addr, 'k) interp"
-  shows "store_and_heap (to_interp (store I) (heap I)) = store_and_heap I"
-  by (simp add: heap_def store_def to_interp_def)
-
-(* remove? *)
-lemma store_and_heap_h:
-  fixes I::"('var, 'addr, 'k) interp"
-    and h::"('addr, 'k) heaps"
-    and x::'var
-  shows "store_and_heap (to_interp (store I) h) x = get_from_heap h ((store I) x)"
-  by (simp add: heap_on_to_interp store_and_heap_def store_on_to_interp)
-
 lemma sub_heap_included:
   fixes h::"('addr, 'k) heaps"
     and h1::"('addr, 'k) heaps"
@@ -194,6 +194,49 @@ lemma sub_heap_included:
   shows "h_dom h1 \<subseteq> h_dom h"
   by (metis Abs_heaps_inverse Rep_heaps a_heap_def assms dom_def dom_map_add finite_Un h_dom_def 
       mem_Collect_eq sup_ge2 union_heaps_def)
+
+lemma card_heap_inf_infty:
+  fixes h::"('addr, 'k) heaps"
+  shows "card_heap h < \<infinity>"
+  by (simp add: card_heap_def)
+
+lemma card_not_empty_heap:
+  fixes h::"('addr, 'k) heaps"
+  assumes "\<not>(empty_heap h)"
+  shows "card_heap h \<ge> 1"
+proof -
+  have "card (h_dom h) \<ge> 1"
+    by (metis (mono_tags) One_nat_def Rep_heaps Suc_leI a_heap_def assms card_0_eq dom_def 
+        empty_heap_def empty_iff h_dom_def mem_Collect_eq neq0_conv)
+  thus "card_heap h \<ge> 1"
+    by (simp add: card_heap_def one_enat_def)
+qed
+
+lemma card_union_disjoint_heaps:
+  fixes h1::"('addr, 'k) heaps"
+    and h2::"('addr, 'k) heaps"
+  assumes "disjoint_heaps h1 h2" 
+    and "card_heap h1 \<ge> n"
+    and "card_heap h2 \<ge> m"
+  shows "card_heap (union_heaps h1 h2) \<ge> (n + m)"
+proof -
+  have disjoint_def:"h_dom h1 \<inter> h_dom h2 = {}"
+    by (meson assms(1) disjoint_heaps_def)
+  hence "h_dom (union_heaps h1 h2) = (h_dom h1) \<union> (h_dom h2)"
+    by (metis Abs_heaps_inverse Rep_heaps a_heap_def dom_def dom_map_add h_dom_def infinite_Un 
+        map_add_comm mem_Collect_eq union_heaps_def)
+  hence "card_heap (union_heaps h1 h2) = card ((h_dom h1) \<union> (h_dom h2))"
+    by (simp add: card_heap_def)
+  hence "card_heap (union_heaps h1 h2) = card (h_dom h1) + card(h_dom h2) - card(h_dom h1 \<inter> h_dom h2)"
+    by (metis Rep_heaps a_heap_def add_diff_cancel_right' card_Un_Int dom_def h_dom_def mem_Collect_eq)
+  hence "card_heap (union_heaps h1 h2) = card_heap h1 + card_heap h2"
+    by (simp add: card_heap_def disjoint_def)
+  thus "card_heap (union_heaps h1 h2) \<ge> (n + m)"
+    by (simp add: add_mono assms(2) assms(3))
+qed
+
+
+subsubsection {* Heap Constructors *}
 
 lemma h_dom_empty_heap:
   "h_dom h_empty = {}"
@@ -231,7 +274,6 @@ lemma h_dom_remove_not_contained_element:
   assumes "x \<notin> (h_dom h)"
   shows "h_dom (remove_from_heap h x) = h_dom h"
   by (metis Rep_heaps_inverse assms domIff dom_def fun_upd_triv h_dom_def remove_from_heap_def)
-
 lemma disjoint_add_remove_element:
   fixes h::"('addr, 'k) heaps"
     and x::'addr
@@ -285,35 +327,6 @@ lemma disjoint_remove_from_heap_restricted_heap:
       h_dom_empty_heap h_dom_remove_not_contained_element inf_bot_right inf_commute not_Some_eq 
       remove_from_heap_def restricted_heap_def)
 
-lemma dom_store_and_heap:
-  fixes I::"('var, 'addr , 'k) interp"
-    and x::'var
-    and y::"('addr , 'k) vec"
-  assumes "store_and_heap I x = Some y"
-  shows "((store I) x) \<in> h_dom (heap I)"
-  by (metis assms domIff dom_def get_from_heap_def h_dom_def option.simps(3) store_and_heap_def)
-
-lemma store_and_heap_with_Rep_heaps:
-  fixes I::"('var, 'addr, 'k) interp"
-    and x::'var
-  shows "store_and_heap I x = Rep_heaps (heap I) (store I x)"
-  by (simp add: get_from_heap_def store_and_heap_def)
-
-lemma get_from_add_to_heap:
-  fixes x::'addr
-    and y::"('addr, 'k) vec"
-  shows "get_from_heap (add_to_heap h_empty x y) x = Some y"
-  by (simp add: Abs_heaps_inverse a_heap_def add_to_heap_def get_from_heap_def h_empty_def)
-
-lemma dom_restricted_heap:
-  fixes h::"('addr, 'k) heaps"
-    and x::'addr
-  assumes "x \<in> h_dom h"
-  shows "h_dom (restricted_heap h x) = {x}"
-  by (metis Un_insert_right add_to_heap_def assms domIff dom_def empty_iff get_from_heap_def 
-      h_dom_add_not_contained_element h_dom_def h_dom_empty_heap not_Some_eq restricted_heap_def 
-      sup_bot.right_neutral)
-
 lemma empty_heap_h_empty:
   "empty_heap h_empty"
   using empty_heap_def h_dom_def h_dom_empty_heap by fastforce
@@ -327,42 +340,6 @@ proof -
     by (simp add: card_heap_def zero_enat_def)
 qed
 
-lemma card_not_empty_heap:
-  fixes h::"('addr, 'k) heaps"
-  assumes "\<not>(empty_heap h)"
-  shows "card_heap h \<ge> 1"
-proof -
-  have "card (h_dom h) \<ge> 1"
-    by (metis (mono_tags) One_nat_def Rep_heaps Suc_leI a_heap_def assms card_0_eq dom_def 
-        empty_heap_def empty_iff h_dom_def mem_Collect_eq neq0_conv)
-  thus "card_heap h \<ge> 1"
-    by (simp add: card_heap_def one_enat_def)
-qed
-
-lemma card_union_disjoint_heaps:
-  fixes h1::"('addr, 'k) heaps"
-    and h2::"('addr, 'k) heaps"
-  assumes "disjoint_heaps h1 h2" 
-    and "card_heap h1 \<ge> n"
-    and "card_heap h2 \<ge> m"
-  shows "card_heap (union_heaps h1 h2) \<ge> (n + m)"
-proof -
-  have disjoint_def:"h_dom h1 \<inter> h_dom h2 = {}"
-    by (meson assms(1) disjoint_heaps_def)
-  hence "h_dom (union_heaps h1 h2) = (h_dom h1) \<union> (h_dom h2)"
-    by (metis Abs_heaps_inverse Rep_heaps a_heap_def dom_def dom_map_add h_dom_def infinite_Un 
-        map_add_comm mem_Collect_eq union_heaps_def)
-  hence "card_heap (union_heaps h1 h2) = card ((h_dom h1) \<union> (h_dom h2))"
-    by (simp add: card_heap_def)
-  hence "card_heap (union_heaps h1 h2) = card (h_dom h1) + card(h_dom h2) - card(h_dom h1 \<inter> h_dom h2)"
-    by (metis Rep_heaps a_heap_def add_diff_cancel_right' card_Un_Int dom_def h_dom_def mem_Collect_eq)
-  hence "card_heap (union_heaps h1 h2) = card_heap h1 + card_heap h2"
-    by (simp add: card_heap_def disjoint_def)
-  thus "card_heap (union_heaps h1 h2) \<ge> (n + m)"
-    by (simp add: add_mono assms(2) assms(3))
-qed
-
-(* remove ? *)
 lemma card_remove_from_heap:
   fixes h::"('addr, 'k) heaps"
     and x::'addr
@@ -382,6 +359,18 @@ proof -
     by (simp add: card_heap_def one_enat_def)
 qed
 
+
+subsubsection {* Heap Restriction *}
+
+lemma dom_restricted_heap:
+  fixes h::"('addr, 'k) heaps"
+    and x::'addr
+  assumes "x \<in> h_dom h"
+  shows "h_dom (restricted_heap h x) = {x}"
+  by (metis Un_insert_right add_to_heap_def assms domIff dom_def empty_iff get_from_heap_def 
+      h_dom_add_not_contained_element h_dom_def h_dom_empty_heap not_Some_eq restricted_heap_def 
+      sup_bot.right_neutral)
+
 lemma restricted_heap_not_empty:
   fixes h::"('addr, 'k) heaps"
     and x::'addr
@@ -393,12 +382,39 @@ lemma restricted_heap_not_empty:
         h_dom_empty_heap h_empty_def)
     then show ?thesis
       by (simp add: empty_heap_def)
-  qed
+qed
 
-lemma card_heap_inf_infty:
-  fixes h::"('addr, 'k) heaps"
-  shows "card_heap h < \<infinity>"
-  by (simp add: card_heap_def)
+
+subsubsection {* Store Applied on a Vector *}
+
+lemma equality_store_vector:
+  assumes "(store_vector s y1) = (store_vector s y2)"
+  shows "\<forall>i. s (y1 $ i) = s (y2 $ i)"
+proof
+  have "addr_from_var_vector s y2 = addr_from_var_vector s y2"
+    by simp
+  fix i
+  have "s (vec_nth y1 i) = s (vec_nth y2 i)"
+    by (metis UNIV_I addr_from_var_vector_def assms store_vector_def vec_lambda_inverse)
+  thus "s (y1 $ i) = s (y2 $ i)"
+    by simp
+qed
+
+
+subsubsection {* Store Applied on a Set *}
+
+lemma antecedent_store_set:
+  fixes I::"('var, 'addr, 'k) interp"
+    and X::"'var set"
+    and l::"'addr"
+  assumes "l \<in> (store_set (store I) X)"
+  shows "\<exists>x. l = store I x \<and> x \<in> X"
+proof -
+  have "l \<in> {store I x |x. x \<in> X}"
+    using assms store_set_def by force
+  then show ?thesis
+    by blast
+qed
 
 
 end
