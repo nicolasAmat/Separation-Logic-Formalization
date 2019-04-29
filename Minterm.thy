@@ -11,6 +11,7 @@ imports
   Test_Formulae
 begin
 
+
 subsection {* Minterms Definition *}
 
 typedef ('var, 'k::finite) minterm 
@@ -146,7 +147,7 @@ proof
 qed
 
 
-subsection {* Minterms Functions *}
+subsection {* Minterm Casts *}
 
 definition to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "to_literal_set M = Rep_minterm M"
@@ -156,12 +157,6 @@ definition to_minterm :: "('var, 'k::finite) literal set \<Rightarrow> ('var, 'k
 
 definition to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) sl_formula set"
   where "to_sl_formula_set M =  {(to_sl_formula l)|l. l \<in> (to_literal_set M)}"
-
-lemma to_literal_set_composed_by_test_formula:
-  "\<forall>l \<in> (to_literal_set M). 
-    (to_sl_formula (l::(('var, 'k::finite) literal)) \<in> test_formulae) 
-  \<or> (\<exists>l_prim. (l = to_literal (sl_not l_prim)) \<and> (l_prim \<in> test_formulae))"
-  by (metis literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 
 subsection {* Minterm Complement *}
@@ -176,7 +171,15 @@ definition minterm_var_set :: "('var, 'k::finite) minterm \<Rightarrow> 'var set
   where "minterm_var_set M = {x. \<exists>l\<in>(to_literal_set M). x\<in>(literal_var_set l)}"
 
 
-subsection {* Minterms Lemmas *}
+subsection {* Minterms Evaluation *}
+
+definition minterm_evl :: "('var, 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) minterm \<Rightarrow> bool"
+  where "minterm_evl I M = literal_set_evl I (to_literal_set M)"
+
+
+subsection {* Useful Results *}
+
+subsubsection {* Minterms Definition *}
 
 lemma minterm_have_ext_card_heap_ge:
   fixes M::"('var, 'k::finite) minterm"
@@ -213,7 +216,16 @@ proof -
 qed
 
 
-subsection {* Some Sets Definitions *}
+subsubsection {* Minterm Casts *}
+
+lemma to_literal_set_composed_by_test_formula:
+  "\<forall>l \<in> (to_literal_set M). 
+    (to_sl_formula (l::(('var, 'k::finite) literal)) \<in> test_formulae) 
+  \<or> (\<exists>l_prim. (l = to_literal (sl_not l_prim)) \<and> (l_prim \<in> test_formulae))"
+  by (metis literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
+
+
+subsection {* Sets Definitions *}
 
 subsubsection {* Intersections Sets *}
 
@@ -233,6 +245,7 @@ definition h_literals :: "('var, 'k::finite) literal set"
   where "h_literals = {to_literal (ext_card_heap_ge n) |n. True}
                     \<union> {to_literal (sl_not (ext_card_heap_ge n)) |n. True}"
 
+
 subsubsection {* Minterms Sets Composed by an Intersection *}
 
 definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
@@ -246,13 +259,6 @@ definition p_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) lit
 
 definition h_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "h_minterm M = to_literal_set M \<inter> h_literals"
-
-
-
-subsection {* Minterms Evaluation *}
-
-definition minterm_evl :: "('var, 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) minterm \<Rightarrow> bool"
-  where "minterm_evl I M = literal_set_evl I (to_literal_set M)"
 
 
 subsection {* Minterms Sets Equality *}
@@ -334,7 +340,7 @@ next
     show "e_minterm M \<union> a_minterm M \<union> p_minterm M \<union> h_minterm M \<subseteq> to_literal_set M"
       by (simp add: a_minterm_def e_minterm_def h_minterm_def p_minterm_def)
 qed
-  
+
 
 subsection {* Completeness Definitions *}
 
@@ -356,7 +362,7 @@ definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Ri
   \<or> (to_literal (sl_not (alloc x))) \<in> (to_literal_set M))"
 
 
-subsubsection {* Sat *}
+subsubsection {* Satisfiability Condition *}
 
 definition minterm_sat :: "('var, 'k::finite) minterm \<Rightarrow> bool"
   where "minterm_sat M = (\<forall>l\<in>(to_literal_set M). (literal_complement l) \<notin> (to_literal_set M))"
@@ -400,9 +406,8 @@ definition footprint_consistent :: "('var, 'k::finite) minterm \<Rightarrow> boo
                                                                                         \<and> to_literal (sl_not (points_to x2 y2)) \<notin> (to_literal_set M))))"
 
 
-subsection {* Minterms Propositions *}
 
-subsubsection {* Proposition 5 *}
+subsection {* Proposition 5 *}
 
 lemma minterm_prop_5:
   fixes I_1::"('var, 'addr, 'k::finite) interp"
@@ -430,7 +435,7 @@ proof -
 qed
 
 
-subsubsection {* Proposition 7 *}
+subsection {* Proposition 7 *}
 
 lemma points_to_var_set:
   assumes "to_literal (points_to x y) \<in> to_literal_set M"
@@ -529,7 +534,7 @@ lemma minterm_prop7:
   using assms(1) assms(2) minterm_prop_7_dc minterm_prop_7_pc by blast
 
 
-subsubsection {* Proposition 9 *}
+subsection {* Proposition 9 *}
 
 lemma minterm_prop_9_not_E_complete:
   fixes M::"('var, 'k::finite) minterm"
