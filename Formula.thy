@@ -4,7 +4,7 @@
 
 section {* Formulas *}
 
-text {* This section contains the syntax and semantics formalization of the separation logic formulas. *}
+text {* This section contains the formulas syntax and semantic. *}
 
 theory Formula
 imports 
@@ -19,13 +19,13 @@ datatype ('var, 'k::finite) sl_formula =
     sl_true
   | sl_false
   (* Classical Logic *)
-  | eq 'var 'var
-  | not "('var, 'k) sl_formula"
-  | conj "('var, 'k) sl_formula" "('var, 'k) sl_formula"
+  | sl_not "('var, 'k) sl_formula"
+  | sl_and "('var, 'k) sl_formula" "('var, 'k) sl_formula"
   (* Quantifier *)
-  | exists 'var "('var, 'k) sl_formula"
+  | sl_exists 'var "('var, 'k) sl_formula"
   (* Separation Logic *)
   | sl_emp
+  | sl_eq 'var 'var
   | sl_mapsto 'var "('var, 'k) vec"
   | sl_conj "('var, 'k) sl_formula" "('var, 'k) sl_formula"
   | sl_magic_wand "('var, 'k) sl_formula" "('var, 'k) sl_formula"
@@ -33,14 +33,14 @@ datatype ('var, 'k::finite) sl_formula =
 
 subsection {* Formulas Semantics *}
 
-primrec evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool"
+fun evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool"
   where 
-    "evaluation I sl_true                = True"
-  | "evaluation I sl_false               = False" 
-  | "evaluation I (eq x y)            = ((store I) x = (store I) y)"
-  | "evaluation I (not P)             = (\<not>(evaluation I P))"
-  | "evaluation I (conj P Q)          = ((evaluation I P) \<and> (evaluation I Q))"
-  | "evaluation I (exists x P)        = (\<exists>u. (evaluation (to_interp ((store I)(x:=u)) (heap I)) P))" 
+    "evaluation I sl_true             = True"
+  | "evaluation I sl_false            = False" 
+  | "evaluation I (sl_not P)          = (\<not>(evaluation I P))"
+  | "evaluation I (sl_and P Q)        = ((evaluation I P) \<and> (evaluation I Q))"
+  | "evaluation I (sl_exists x P)     = (\<exists>u. (evaluation (to_interp ((store I)(x:=u)) (heap I)) P))"
+  | "evaluation I (sl_eq x y)         = ((store I) x = (store I) y)"
   | "evaluation I (sl_emp)            = empty_heap (heap I)"
   | "evaluation I (sl_mapsto x y)     = ((h_dom (heap I) = {(store I) x})
                                       \<and> ((store_and_heap I x) = Some (store_vector (store I) y)))"
@@ -55,21 +55,21 @@ primrec evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite)
 subsection {* Formula Complement *}
 
 fun sl_formula_complement :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
-  where "sl_formula_complement (not l) = l"
-      | "sl_formula_complement l = (not l)"
+  where "sl_formula_complement (sl_not l) = l"
+      | "sl_formula_complement l = (sl_not l)"
 
 
-subsection {* Var Set *}
+subsection {* Formula Var Set *}
 
 fun var_set :: "('var, 'k::finite) sl_formula \<Rightarrow> 'var set"
   where 
     "var_set sl_true = {}"
   | "var_set sl_false = {}"
-  | "var_set (eq x y) = {x, y}"
-  | "var_set (not P) = var_set P"
-  | "var_set (conj P Q) = var_set P \<union> var_set Q"
-  | "var_set (exists x P) = var_set P"
+  | "var_set (sl_not P) = var_set P"
+  | "var_set (sl_and P Q) = var_set P \<union> var_set Q"
+  | "var_set (sl_exists x P) = var_set P"
   | "var_set (sl_emp) = {}"
+  | "var_set (sl_eq x y) = {x, y}"
   | "var_set (sl_mapsto x y) = {x} \<union> {y $ i | i. True}"
   | "var_set (sl_conj P Q) = var_set P \<union> var_set Q"
   | "var_set (sl_magic_wand P Q) = var_set P \<union> var_set Q"

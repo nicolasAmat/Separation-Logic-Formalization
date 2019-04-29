@@ -30,7 +30,7 @@ subsection {* Cardinality Constraint *}
 
 fun card_heap_ge :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
-      "card_heap_ge (Suc n) = sl_conj (card_heap_ge n) (not sl_emp)"
+      "card_heap_ge (Suc n) = sl_conj (card_heap_ge n) (sl_not sl_emp)"
     | "card_heap_ge 0 = sl_true"
 
 fun ext_card_heap_ge ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
@@ -46,7 +46,7 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
     "(points_to x y) \<in> test_formulae"
   | "(alloc x) \<in> test_formulae"
   | "(ext_card_heap_ge n) \<in> test_formulae"
-  | "(eq x y) \<in> test_formulae"
+  | "(sl_eq x y) \<in> test_formulae"
 
 
 subsection {* Propositions *}
@@ -151,13 +151,13 @@ proof
         using zero_enat_def by auto 
     next
       case (Suc nat)
-      have "evaluation I (sl_conj (card_heap_ge nat) (not sl_emp))"
+      have "evaluation I (sl_conj (card_heap_ge nat) (sl_not sl_emp))"
         using Suc.prems by auto 
       from this obtain h1 h2 
         where def_0: "(disjoint_heaps h1 h2)
                     \<and> (union_heaps h1 h2 = heap I)
                     \<and> (evaluation (to_interp (store I) h1) (card_heap_ge nat))
-                    \<and> (evaluation (to_interp (store I) h2) (not sl_emp))"
+                    \<and> (evaluation (to_interp (store I) h2) (sl_not sl_emp))"
         using evaluation.simps(9) by blast
       hence "evaluation (to_interp (store I) h1) (ext_card_heap_ge nat)"
         by simp
@@ -202,7 +202,7 @@ next
         by (metis Suc.IH heap_on_to_interp)
       have "\<not>(empty_heap h2)" unfolding h2_def
         by (simp add: l_def restricted_heap_not_empty)
-      hence h2_res:"evaluation (to_interp (store I) h2) (not sl_emp)"
+      hence h2_res:"evaluation (to_interp (store I) h2) (sl_not sl_emp)"
         by (simp add: heap_on_to_interp)
       from h_res and h1_res and h2_res show ?case
         by auto
@@ -220,8 +220,8 @@ subsection {* Literal *}
 subsubsection {* Literals Definition *}
 
 typedef ('var, 'k::finite) literal 
-  = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(not f)|f. f \<in> test_formulae}"
-  using test_formulae.intros(3) by force
+  = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(sl_not f)|f. f \<in> test_formulae}"
+  using test_formulae.intros(1) by fastforce
 
 
 subsubsection {* Literals Functions *}
@@ -237,14 +237,14 @@ definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('
 
 (* TODO : add section *)
 fun remove_first_not :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
-  where "remove_first_not (not l) = l"
+  where "remove_first_not (sl_not l) = l"
       | "remove_first_not l = l"
 
 definition to_atom :: "('var, 'k::finite) literal \<Rightarrow> ('var ,'k) sl_formula"
   where "to_atom l = remove_first_not (to_sl_formula l)"
 
 lemma literal_atom_cases_tmp:
-  "(to_literal (to_atom l) = l) \<or> to_literal (not (to_atom l)) = l"
+  "(to_literal (to_atom l) = l) \<or> to_literal (sl_not (to_atom l)) = l"
   by (metis Rep_literal_inverse remove_first_not.simps(1) remove_first_not.simps(10) 
       remove_first_not.simps(2) remove_first_not.simps(3) remove_first_not.simps(4) 
       remove_first_not.simps(5) remove_first_not.simps(6) remove_first_not.simps(7) 
@@ -252,23 +252,23 @@ lemma literal_atom_cases_tmp:
       to_atom_def to_literal_def to_sl_formula_def)
 
 lemma literal_atom_cases:
-  obtains l where "l = to_literal (to_atom l)" | "l = to_literal (not (to_atom l))" 
+  obtains l where "l = to_literal (to_atom l)" | "l = to_literal (sl_not (to_atom l))" 
 proof (cases "l = to_literal (to_atom l)")
   case True
   thus ?thesis 
   proof -
-  have f1: "\<And>s. (s::('a, 'b) sl_formula) \<notin> Collect (sup (\<lambda>s. s \<in> {s. s \<in> test_formulae}) (\<lambda>s. s \<in> {not s |s. s \<in> test_formulae})) \<or> Rep_literal (Abs_literal s) = s"
+  have f1: "\<And>s. (s::('a, 'b) sl_formula) \<notin> Collect (sup (\<lambda>s. s \<in> {s. s \<in> test_formulae}) (\<lambda>s. s \<in> {sl_not s |s. s \<in> test_formulae})) \<or> Rep_literal (Abs_literal s) = s"
   using Abs_literal_inverse by blast
     have "(sl_false::('a, 'b) sl_formula) \<in> test_formulae"
       by (metis (no_types) ext_card_heap_ge.simps(1) test_formulae.intros(3))
-    then have "(sl_false::('a, 'b) sl_formula) \<in> Collect (sup (\<lambda>s. s \<in> {s. s \<in> test_formulae}) (\<lambda>s. s \<in> {not s |s. s \<in> test_formulae}))"
+    then have "(sl_false::('a, 'b) sl_formula) \<in> Collect (sup (\<lambda>s. s \<in> {s. s \<in> test_formulae}) (\<lambda>s. s \<in> {sl_not s |s. s \<in> test_formulae}))"
       by blast
     then show ?thesis
       using f1 by (metis (lifting) remove_first_not.simps(3) that(1) to_atom_def to_literal_def to_sl_formula_def)
   qed
 next
   case False
-  hence "l = to_literal (not (to_atom l))" using literal_atom_cases_tmp[of l] by simp
+  hence "l = to_literal (sl_not (to_atom l))" using literal_atom_cases_tmp[of l] by simp
   thus ?thesis using that(2) by auto 
 qed
 
@@ -279,7 +279,7 @@ lemma to_atom_is_test_formula:
   shows "(to_atom l) \<in> test_formulae"
 proof (cases "to_sl_formula l \<in> test_formulae")
   case False
-  have "\<And>l. (\<exists>s. Rep_literal (l::('var, 'k) literal) = not s \<and> s \<in> test_formulae) \<or> Rep_literal l \<in> test_formulae"
+  have "\<And>l. (\<exists>s. Rep_literal (l::('var, 'k) literal) = sl_not s \<and> s \<in> test_formulae) \<or> Rep_literal l \<in> test_formulae"
     using Rep_literal by blast
   then show ?thesis
     by (metis (no_types) False remove_first_not.simps(1) to_atom_def to_sl_formula_def)
@@ -325,7 +325,7 @@ next
     }
     {
       fix x y
-      assume "to_sl_formula l = eq x y"
+      assume "to_sl_formula l = sl_eq x y"
       thus "to_atom l = to_sl_formula l"
         by (simp add: to_atom_def)
     }
@@ -359,18 +359,18 @@ definition literal_set_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> (
 subsection {* Literal Footprint *}
 
 definition av :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
-  where "av T = {x1 | x1 x2. (to_literal (eq x1 x2) \<in> T)
+  where "av T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
                            \<and> (T \<inter> ({to_literal (alloc x2)} \<union> {to_literal (points_to x2 y) | y. True})) \<noteq> {}}"
 
 definition nv :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
-  where "nv T = {x1 | x1 x2. (to_literal (eq x1 x2) \<in> T)
-                           \<and> (to_literal (not (alloc x2))) \<in> T}"
+  where "nv T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
+                           \<and> (to_literal (sl_not (alloc x2))) \<in> T}"
 
 definition fp :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Rightarrow> ('var, 'k) literal set"
-  where "fp X T = T \<inter> ({to_literal (alloc x) | x. x\<in>X}
-                     \<union> {to_literal (not (alloc x)) | x. x\<in>X}
-                     \<union> {to_literal (points_to x y) | x y. x\<in>X}
-                     \<union> {to_literal (not (points_to x y)) | x y. x\<in>X})"
+  where "fp X T = T \<inter> ({to_literal (alloc x) | x. x \<in> X}
+                     \<union> {to_literal (sl_not (alloc x)) | x. x \<in> X}
+                     \<union> {to_literal (points_to x y) | x y. x \<in> X}
+                     \<union> {to_literal (sl_not (points_to x y)) | x y. x \<in> X})"
 
 
 subsubsection {* Useful Literals Results *}
@@ -383,8 +383,8 @@ by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
 
 lemma neg_literal_inv[simp]:
   fixes f::"('var, 'k::finite) sl_formula"
-  assumes "f\<in> test_formulae"
-  shows "(to_sl_formula (to_literal (not f))) = not f"
+  assumes "f \<in> test_formulae"
+  shows "(to_sl_formula (to_literal (sl_not f))) = sl_not f"
 by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
 
 (* TODO *)
@@ -434,7 +434,7 @@ qed
 
 lemma not_heap_card:
   assumes "Suc 0 \<le> n"
-  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (not (ext_card_heap_ge (enat n)))} \<noteq> {}"
+  shows "{I::('var, 'addr, 'k::finite) interp. evaluation I (sl_not (ext_card_heap_ge (enat n)))} \<noteq> {}"
 proof -
   define addr::'addr where "addr = (SOME x. x\<in> UNIV)"
   define store::"('var\<Rightarrow>'addr)" where "store = (\<lambda>x. addr)"
@@ -445,7 +445,7 @@ proof -
   finally have "card_heap (heap I) = 0" by (simp add: zero_enat_def)
   hence "\<not> evaluation I (ext_card_heap_ge (enat n))" using tf_prop_1_3 assms
     by (metis enat_ord_simps(1) not_less_eq_eq zero_enat_def)
-  hence "evaluation I (not (ext_card_heap_ge (enat n)))" by simp
+  hence "evaluation I (sl_not (ext_card_heap_ge (enat n)))" by simp
   thus ?thesis by blast
 qed
 

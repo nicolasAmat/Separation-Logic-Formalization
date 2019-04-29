@@ -4,7 +4,7 @@
 
 section {* Interpretations *}
 
-text {* This section contains the formalization of an interpretation in the separation logic. *}
+text {* This section contains the interpretations. *}
 
 theory Interpretation
 imports 
@@ -289,7 +289,8 @@ lemma union_add_remove_element:
     and x::'addr
   assumes  "x \<in> (h_dom h)"
     and "get_from_heap h x = Some y"
-  shows "union_heaps (add_to_heap h_empty x y) (remove_from_heap h x) = h" using assms unfolding add_to_heap_def h_empty_def remove_from_heap_def h_dom_def get_from_heap_def
+  shows "union_heaps (add_to_heap h_empty x y) (remove_from_heap h x) = h" 
+  using assms unfolding add_to_heap_def h_empty_def remove_from_heap_def h_dom_def get_from_heap_def
 proof -
   assume a1: "Rep_heaps h x = Some y"
   assume "x \<in> {a. Rep_heaps h a \<noteq> None}"
