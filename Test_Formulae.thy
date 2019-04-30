@@ -337,6 +337,35 @@ proof -
   thus ?thesis by blast
 qed
 
+lemma card_heap_bounded:
+  assumes "evaluation I (ext_card_heap_ge n1)"
+    and "evaluation I (sl_not (ext_card_heap_ge n2))"
+  shows "n1 < n2"
+proof -
+  have "evaluation I (ext_card_heap_ge n1)"
+    by (simp add: assms(1))
+  moreover have "\<not>(evaluation I (ext_card_heap_ge n2))"
+    using assms(2) by auto
+  ultimately show "n1 < n2"
+    by (simp add: tf_prop_1_3)
+qed
+
+
+subsubsection {* Test Formulae Set *}
+
+lemma test_formulae_charact:
+  "test_formulae = {(sl_eq x y)|x y. True} 
+                 \<union> {(alloc x)|x. True}
+                 \<union> {(points_to x y)|x y. True} 
+                 \<union> {ext_card_heap_ge n|n. True}"
+proof
+  show "test_formulae \<subseteq> {sl_eq x y |x y. True} \<union> {alloc x |x. True} \<union> {points_to x y |x y. True} \<union> {ext_card_heap_ge n |n. True}"
+    by (simp add: subset_iff test_formulae.simps)
+next
+  show "{sl_eq x y |x y. True} \<union> {alloc x |x. True} \<union> {points_to x y |x y. True} \<union> {ext_card_heap_ge n |n. True} \<subseteq> test_formulae"
+    using test_formulae.simps by fastforce
+qed
+
 
 subsubsection {* Literal Casts *}
 
