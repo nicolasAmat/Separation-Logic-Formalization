@@ -474,7 +474,6 @@ next
 qed
 
 
-(*
 subsection {* Propostions *}
 
 subsubsection {* Propostion 3 *}
@@ -489,21 +488,87 @@ proof -
     by (metis assms heap_on_to_interp set_mp store_on_to_interp tf_prop_1_2)
 qed
 
+lemma union_heaps_distrib:
+  fixes h1::"('addr, 'k) heaps"
+   and h2::"('addr, 'k) heaps"
+   and h3::"('addr, 'k) heaps"
+ shows "(union_heaps h1 (union_heaps h2 h3)) = (union_heaps (union_heaps h1 h2) h3)"
+proof -
+  have "\<And>h. finite (dom (Rep_heaps (h::('addr, 'k) heaps)))"
+    using Rep_heaps a_heap_def by blast
+  then show ?thesis
+    by (simp add: Abs_heaps_inverse a_heap_def union_heaps_def)
+qed
+
+lemma h_dom_union_heaps:
+  "h_dom (union_heaps h1 h2) = h_dom h1 \<union> h_dom h2"
+proof
+  show "h_dom (union_heaps h1 h2) \<subseteq> h_dom h1 \<union> h_dom h2"
+    sorry
+next
+  show " h_dom h1 \<union> h_dom h2 \<subseteq> h_dom (union_heaps h1 h2)"
+    sorry
+qed
+
+lemma h_dom_union_heaps_in_one_h_dom:
+  assumes "x \<in> h_dom (union_heaps h1 h2)"
+  shows "x \<in> h_dom h1 \<or> x \<in> h_dom h2"
+proof (rule ccontr)
+  assume asm:"\<not>(x \<in> h_dom h1 \<or> x \<in> h_dom h2)"
+  hence "x \<notin> h_dom h1 \<and> x \<notin> h_dom h2"
+    by auto
+  moreover have "h_dom (union_heaps h1 h2) = h_dom h1 \<union> h_dom h2"
+    by (simp add: h_dom_union_heaps)
+  ultimately show False
+    using assms by blast
+qed
+
+lemma disjoint_heaps_union_heaps:
+  assumes "disjoint_heaps (union_heaps h1 h2) h3"
+    and "disjoint_heaps h1 h2"
+  shows "disjoint_heaps h1 (union_heaps h2 h3)"
+proof (rule ccontr)
+  assume asm:"\<not>(disjoint_heaps h1 (union_heaps h2 h3))"
+  obtain x where in_1:"x \<in> h_dom h1"
+             and in_2:"x \<in> h_dom (union_heaps h2 h3)"
+    by (meson Int_emptyI asm disjoint_heaps_def)
+  hence "x \<in> (h_dom h2) \<or> x \<in> (h_dom h3)"
+    by (simp add: h_dom_union_heaps_in_one_h_dom)  
+  moreover have "x \<in> (h_dom h2) \<longrightarrow> \<not>(disjoint_heaps h1 h2)"
+    by (meson disjoint_heaps_def disjoint_iff_not_equal in_1)
+  moreover have "x \<in> (h_dom h3) \<longrightarrow> \<not>(disjoint_heaps (union_heaps h1 h2) h3)"
+    by (meson contra_subsetD disjoint_heaps_def disjoint_iff_not_equal in_1 sub_heap_included)
+  ultimately show False
+    using assms(1) assms(2) by blast
+qed
+  
 lemma extended_heap_points_to:
   assumes "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (points_to x y))"
+    and "disjoint_heaps (heap I) h"
   shows "\<not>(evaluation I (points_to x y))"
-proof -
-  have 1:"h_dom (heap I) \<subseteq> h_dom (union_heaps (heap I) h)"
-    by (simp add: sub_heap_included)
-  have "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (sl_conj (sl_mapsto x y) sl_true))"
-    by (metis assms points_to_def)
-  from this and 1 have "\<not>(\<exists>h1 h2. (union_heaps h1 h2 = heap I)
-                 \<and> (disjoint_heaps h1 h2) 
-                 \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y)) 
-                 \<and> (evaluation (to_interp (store I) h2) sl_true))"
-    sorry
-  show "\<not>(evaluation I (points_to x y))"
-    sorry
+proof (rule ccontr)
+  assume "\<not>(\<not>(evaluation I (points_to x y)))"
+  hence "evaluation I (points_to x y)"
+    by auto
+  from this obtain h1 h2 where def_1:"(union_heaps h1 h2 = heap I)
+                                    \<and> (disjoint_heaps h1 h2)
+                                    \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
+                                    \<and> (evaluation (to_interp (store I) h2) sl_true)"
+    by (metis evaluation.simps(9) points_to_def)
+  define h3 where "h3 = union_heaps h2 h"
+  have union_heaps_h1_h3:"(union_heaps h1 h3) = (union_heaps (heap I) h)"
+    by (simp add: def_1 h3_def union_heaps_distrib)
+  have "disjoint_heaps h1 h3" unfolding h3_def
+    by (simp add: assms(2) def_1 disjoint_heaps_union_heaps) 
+  hence def_2:"(union_heaps h1 h3 = union_heaps (heap I) h)
+       \<and> (disjoint_heaps h1 h3)
+       \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
+       \<and> (evaluation (to_interp (store I) h3) sl_true)"
+    using union_heaps_h1_h3  def_1 evaluation.simps(1) by blast
+  have  "evaluation (to_interp (store I) (union_heaps (heap I) h)) (points_to x y)"
+    by (metis (no_types, lifting) def_2 evaluation.simps(9) heap_on_to_interp points_to_def store_on_to_interp)
+  thus False
+    using assms by blast
 qed
 
 lemma tf_prop_3:
@@ -529,7 +594,6 @@ proof (rule ccontr)
   thus False
     using assms by blast
   oops
-*)
 
 
 end
