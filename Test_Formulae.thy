@@ -575,10 +575,11 @@ lemma tf_prop_3:
   fixes T::"('var, 'k::finite) literal set"
     and I::"('var, 'addr, 'k) interp"
   assumes "literal_set_evl I (fp (av T) T)"
-  shows "\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T)"
+  shows "\<forall>h. (disjoint_heaps (heap I) h) \<longrightarrow> literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T)"
 proof (rule ccontr)
-  assume "\<not> (\<forall>h. literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
+  assume "\<not> (\<forall>h.  (disjoint_heaps (heap I) h) \<longrightarrow> literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
   from this obtain h where "\<not>(literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
+                      and disoint_h:"disjoint_heaps (heap I) h"
     by blast
   from this obtain l where l_in_fp: "l \<in> (fp (av T) T)"
                       and l_evl: "\<not>(literal_evl (to_interp (store I) (union_heaps (heap I) h)) l)"
@@ -586,10 +587,8 @@ proof (rule ccontr)
   have case_1: "\<exists>x. l = to_literal (alloc x) \<longrightarrow> \<not>(literal_evl I l)"
     by (metis extended_heap_alloc l_evl literal_evl_def pos_literal_inv test_formulae.intros(2))
   have case_2: "\<exists>x y. l = to_literal (points_to x y) \<longrightarrow> \<not>(literal_evl I l)"
-    by (metis extended_heap_points_to l_evl literal_evl_def pos_literal_inv test_formulae.intros(1))
-    
-
-  from case_1  have "\<not>(literal_set_evl I (fp (av T) T))"
+    by (metis disoint_h extended_heap_points_to l_evl literal_evl_def pos_literal_inv test_formulae.intros(1))
+  from case_1 and case_2 have "\<not>(literal_set_evl I (fp (av T) T))"
     sorry
   thus False
     using assms by blast
