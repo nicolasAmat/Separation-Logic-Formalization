@@ -488,7 +488,7 @@ proof -
     by (metis assms heap_on_to_interp set_mp store_on_to_interp tf_prop_1_2)
 qed
 
-lemma union_heaps_distrib:
+lemma union_heaps_associative:
   fixes h1::"('addr, 'k) heaps"
    and h2::"('addr, 'k) heaps"
    and h3::"('addr, 'k) heaps"
@@ -557,7 +557,7 @@ proof (rule ccontr)
     by (metis evaluation.simps(9) points_to_def)
   define h3 where "h3 = union_heaps h2 h"
   have union_heaps_h1_h3:"(union_heaps h1 h3) = (union_heaps (heap I) h)"
-    by (simp add: def_1 h3_def union_heaps_distrib)
+    by (simp add: def_1 h3_def union_heaps_associative)
   have "disjoint_heaps h1 h3" unfolding h3_def
     by (simp add: assms(2) def_1 disjoint_heaps_union_heaps) 
   hence def_2:"(union_heaps h1 h3 = union_heaps (heap I) h)
