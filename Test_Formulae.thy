@@ -504,7 +504,21 @@ lemma h_dom_union_heaps:
   "h_dom (union_heaps h1 h2) = h_dom h1 \<union> h_dom h2"
 proof
   show "h_dom (union_heaps h1 h2) \<subseteq> h_dom h1 \<union> h_dom h2"
-    sorry
+  proof
+    fix x
+    assume "x \<in> h_dom (union_heaps h1 h2)"
+    hence "x \<in> dom ((Rep_heaps h1) ++ (Rep_heaps h2))"
+      by (metis CollectD Rep_heaps a_heap_def dom_map_add finite_Un to_heap_def to_heap_domain 
+          union_heaps_def)
+    hence "x \<in> dom (Rep_heaps h1) \<or> x \<in> dom (Rep_heaps h2)"
+      by auto
+    hence "x \<in> h_dom h1 \<or> x \<in> h_dom h2"
+      by (metis CollectD Rep_heaps Rep_heaps_inverse a_heap_def to_heap_def to_heap_domain)
+    hence "x \<in> (h_dom h1 \<union> h_dom h2)"
+      by simp
+    thus "\<And>x. x \<in> h_dom (union_heaps h1 h2) \<Longrightarrow> x \<in> h_dom h1 \<union> h_dom h2"
+      by (metis CollectD Rep_heaps Rep_heaps_inverse Un_commute a_heap_def dom_map_add finite_Un 
+          to_heap_def to_heap_domain union_heaps_def)
 next
   show " h_dom h1 \<union> h_dom h2 \<subseteq> h_dom (union_heaps h1 h2)"
     sorry
