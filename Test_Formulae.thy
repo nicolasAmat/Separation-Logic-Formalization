@@ -478,6 +478,8 @@ subsection {* Propostions *}
 
 subsubsection {* Propostion 3 *}
 
+(* Case 1 *)
+
 lemma extended_heap_alloc:
   assumes "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (alloc x))"
   shows "\<not>(evaluation I (alloc x))"
@@ -487,6 +489,8 @@ proof -
   thus "\<not>(evaluation I (alloc x))"
     by (metis assms heap_on_to_interp set_mp store_on_to_interp tf_prop_1_2)
 qed
+
+(* Case 2 *)
 
 lemma union_heaps_associative:
   fixes h1::"('addr, 'k) heaps"
@@ -584,9 +588,9 @@ proof (rule ccontr)
   have "disjoint_heaps h1 h3" unfolding h3_def
     by (simp add: assms(2) def_1 disjoint_heaps_union_heaps) 
   hence def_2:"(union_heaps h1 h3 = union_heaps (heap I) h)
-       \<and> (disjoint_heaps h1 h3)
-       \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
-       \<and> (evaluation (to_interp (store I) h3) sl_true)"
+             \<and> (disjoint_heaps h1 h3)
+             \<and> (evaluation (to_interp (store I) h1) (sl_mapsto x y))
+             \<and> (evaluation (to_interp (store I) h3) sl_true)"
     using union_heaps_h1_h3  def_1 evaluation.simps(1) by blast
   have  "evaluation (to_interp (store I) (union_heaps (heap I) h)) (points_to x y)"
     by (metis (no_types, lifting) def_2 evaluation.simps(9) heap_on_to_interp points_to_def store_on_to_interp)
@@ -594,24 +598,44 @@ proof (rule ccontr)
     using assms by blast
 qed
 
+(* Case 3 *)
+
+lemma extended_heap_not_points_to:
+  assumes "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (sl_not (points_to x y)))"
+    and "disjoint_heaps (heap I) h"
+  shows "\<not>(evaluation I (sl_not (points_to x y)))"
+proof (rule ccontr)
+  assume asm:"evaluation I (sl_not (points_to x y))"
+  hence "\<not>(evaluation I (points_to x y))"
+    by simp
+  oops
+
+(* Case 4 *)
+
+
+(* Prop 3 *)
+
 lemma tf_prop_3:
   fixes T::"('var, 'k::finite) literal set"
     and I::"('var, 'addr, 'k) interp"
+    and h::"('addr, 'k) heaps"
   assumes "literal_set_evl I (fp (av T) T)"
-  shows "\<forall>h. (disjoint_heaps (heap I) h) \<longrightarrow> literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T)"
+    and "disjoint_heaps (heap I) h"
+  shows "literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T)"
 proof (rule ccontr)
-  assume "\<not> (\<forall>h.  (disjoint_heaps (heap I) h) \<longrightarrow> literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
-  from this obtain h where "\<not>(literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
-                      and disoint_h:"disjoint_heaps (heap I) h"
-    by blast
+  assume "\<not>(literal_set_evl (to_interp (store I) (union_heaps (heap I) h)) (fp (av T) T))"
   from this obtain l where l_in_fp: "l \<in> (fp (av T) T)"
                       and l_evl: "\<not>(literal_evl (to_interp (store I) (union_heaps (heap I) h)) l)"
-    using literal_set_evl_def by blast
+    using literal_set_evl_def by blast 
   have case_1: "\<exists>x. l = to_literal (alloc x) \<longrightarrow> \<not>(literal_evl I l)"
     by (metis extended_heap_alloc l_evl literal_evl_def pos_literal_inv test_formulae.intros(2))
   have case_2: "\<exists>x y. l = to_literal (points_to x y) \<longrightarrow> \<not>(literal_evl I l)"
-    by (metis disoint_h extended_heap_points_to l_evl literal_evl_def pos_literal_inv test_formulae.intros(1))
-  from case_1 and case_2 have "\<not>(literal_set_evl I (fp (av T) T))"
+    by (metis assms(2) extended_heap_points_to l_evl literal_evl_def pos_literal_inv test_formulae.intros(1))
+  have case_3: "\<exists>x y. l = to_literal (sl_not (points_to x y)) \<longrightarrow> \<not>(literal_evl I l)"
+    sorry
+  have case_4: "\<exists>x. l = to_literal (sl_not (alloc x)) \<longrightarrow> \<not>(literal_evl I l)"
+    sorry
+  from case_1 and case_2 and case_3 and case_4 have "\<not>(literal_set_evl I (fp (av T) T))"
     sorry
   thus False
     using assms by blast
