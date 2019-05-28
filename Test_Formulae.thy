@@ -519,6 +519,7 @@ proof
     thus "\<And>x. x \<in> h_dom (union_heaps h1 h2) \<Longrightarrow> x \<in> h_dom h1 \<union> h_dom h2"
       by (metis CollectD Rep_heaps Rep_heaps_inverse Un_commute a_heap_def dom_map_add finite_Un 
           to_heap_def to_heap_domain union_heaps_def)
+  qed
 next
   show " h_dom h1 \<union> h_dom h2 \<subseteq> h_dom (union_heaps h1 h2)"
     sorry
