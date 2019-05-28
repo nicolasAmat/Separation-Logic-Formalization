@@ -522,7 +522,20 @@ proof
   qed
 next
   show " h_dom h1 \<union> h_dom h2 \<subseteq> h_dom (union_heaps h1 h2)"
-    sorry
+  proof
+    fix x
+    assume "x \<in> h_dom h1 \<union> h_dom h2"
+    hence "x \<in> dom (Rep_heaps h1) \<union> dom (Rep_heaps h2)"
+      by (metis CollectD Rep_heaps Rep_heaps_inverse a_heap_def to_heap_def to_heap_domain)
+    hence "x \<in> dom ((Rep_heaps h1) ++ (Rep_heaps h2))"
+      by auto
+    hence "x \<in> h_dom (Abs_heaps ((Rep_heaps h1) ++ (Rep_heaps h2)))"
+      by (metis CollectD Rep_heaps a_heap_def dom_map_add finite_UnI to_heap_def to_heap_domain)
+    hence "x \<in> h_dom (union_heaps h1 h2)"
+      by (simp add: union_heaps_def)
+    thus "\<And>x. x \<in> h_dom h1 \<union> h_dom h2 \<Longrightarrow> x \<in> h_dom (union_heaps h1 h2)"
+      sorry
+  qed
 qed
 
 lemma h_dom_union_heaps_in_one_h_dom:
