@@ -604,11 +604,7 @@ lemma extended_heap_not_points_to:
   assumes "\<not>(evaluation (to_interp (store I) (union_heaps (heap I) h)) (sl_not (points_to x y)))"
     and "disjoint_heaps (heap I) h"
   shows "\<not>(evaluation I (sl_not (points_to x y)))"
-proof (rule ccontr)
-  assume asm:"evaluation I (sl_not (points_to x y))"
-  hence "\<not>(evaluation I (points_to x y))"
-    by simp
-  oops
+  sorry
 
 (* Case 4 *)
 
@@ -627,15 +623,17 @@ proof (rule ccontr)
   from this obtain l where l_in_fp: "l \<in> (fp (av T) T)"
                       and l_evl: "\<not>(literal_evl (to_interp (store I) (union_heaps (heap I) h)) l)"
     using literal_set_evl_def by blast 
-  have case_1: "\<exists>x. l = to_literal (alloc x) \<longrightarrow> \<not>(literal_evl I l)"
-    by (metis extended_heap_alloc l_evl literal_evl_def pos_literal_inv test_formulae.intros(2))
-  have case_2: "\<exists>x y. l = to_literal (points_to x y) \<longrightarrow> \<not>(literal_evl I l)"
-    by (metis assms(2) extended_heap_points_to l_evl literal_evl_def pos_literal_inv test_formulae.intros(1))
-  have case_3: "\<exists>x y. l = to_literal (sl_not (points_to x y)) \<longrightarrow> \<not>(literal_evl I l)"
+  have case_1: "\<exists>x. l = to_literal (alloc x) \<longrightarrow> \<not>(literal_set_evl I (fp (av T) T))"
+    by (metis extended_heap_alloc l_evl l_in_fp literal_evl_def literal_set_evl_def pos_literal_inv test_formulae.intros(2))
+  have case_2: "\<exists>x y. l = to_literal (points_to x y) \<longrightarrow> \<not>(literal_set_evl I (fp (av T) T))"
+    by (metis assms(2) extended_heap_points_to l_evl l_in_fp literal_evl_def literal_set_evl_def pos_literal_inv test_formulae.intros(1))
+  have case_3: "\<exists>x y. l = to_literal (sl_not (points_to x y)) \<longrightarrow> \<not>(literal_set_evl I (fp (av T) T))"
+    by (metis assms(2) extended_heap_not_points_to l_evl l_in_fp literal_evl_def literal_set_evl_def neg_literal_inv test_formulae.intros(1))
+  have case_4: "\<exists>x. l = to_literal (sl_not (alloc x)) \<longrightarrow> \<not>(literal_set_evl I (fp (av T) T))"
     sorry
-  have case_4: "\<exists>x. l = to_literal (sl_not (alloc x)) \<longrightarrow> \<not>(literal_evl I l)"
+  have l_cases: "(\<exists>x. l = to_literal (alloc x)) \<or> (\<exists>x y. l = to_literal (points_to x y)) \<or> (\<exists>x y. l = to_literal (sl_not (points_to x y))) \<or> (\<exists>x. l = to_literal (sl_not (alloc x)))"
     sorry
-  from case_1 and case_2 and case_3 and case_4 have "\<not>(literal_set_evl I (fp (av T) T))"
+  from case_1 and case_2 and case_3 and case_4 and l_cases have "\<not>(literal_set_evl I (fp (av T) T))"
     sorry
   thus False
     using assms by blast
