@@ -2,9 +2,9 @@
     Author:     Nicolas Amat, Mnacho Echenim, Nicolas Peltier
 *)
 
-section {* Modus Ponens *}
+section \<open>Modus Ponens\<close>
 
-text {* This section contains the Modus Ponens like for the sepration logic. *}
+text \<open>This section contains the Modus Ponens like for the sepration logic.\<close>
 
 theory Modus_Ponens
 imports  
@@ -13,7 +13,7 @@ imports
 begin
 
 
-subsection {* Proof *}
+subsection \<open>Proof\<close>
 
 lemma modus_ponens:
   fixes I::"('var, 'addr, 'k::finite) interp" 

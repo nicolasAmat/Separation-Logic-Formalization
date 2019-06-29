@@ -2,9 +2,9 @@
     Author:     Nicolas Amat, Mnacho Echenim, Nicolas Peltier
 *)
 
-section {* Formulas *}
+section \<open>Formulas\<close>
 
-text {* This section contains the formulas syntax and semantic. *}
+text \<open>This section contains the formulas syntax and semantic.\<close>
 
 theory Formula
 imports 
@@ -12,7 +12,7 @@ imports
 begin
 
 
-subsection {* Formulas Syntax *}
+subsection \<open>Formulas Syntax\<close>
 
 datatype ('var, 'k::finite) sl_formula =
   (* Boolean *)
@@ -31,7 +31,7 @@ datatype ('var, 'k::finite) sl_formula =
   | sl_magic_wand "('var, 'k) sl_formula" "('var, 'k) sl_formula"
 
 
-subsection {* Formulas Semantics *}
+subsection \<open>Formulas Semantics\<close>
 
 fun evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite) sl_formula \<Rightarrow> bool"
   where 
@@ -52,14 +52,14 @@ fun evaluation :: "('var, 'addr, 'k) interp \<Rightarrow> ('var, 'k::finite) sl_
                                          \<longrightarrow> (evaluation (to_interp (store I) (union_heaps (heap I) h))) Q)"
 
 
-subsection {* Formula Complement *}
+subsection \<open>Formula Complement\<close>
 
 fun sl_formula_complement :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
   where "sl_formula_complement (sl_not l) = l"
       | "sl_formula_complement l = (sl_not l)"
 
 
-subsection {* Formula Var Set *}
+subsection \<open>Formula Var Set\<close>
 
 fun var_set :: "('var, 'k::finite) sl_formula \<Rightarrow> 'var set"
   where 

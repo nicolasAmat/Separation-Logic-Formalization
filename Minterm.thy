@@ -2,9 +2,9 @@
     Author:     Nicolas Amat, Mnacho Echenim, Nicolas Peltier
 *)
 
-section {* Minterms *}
+section \<open>Minterms\<close>
 
-text {* This section contains the minterms definition and some propositions related to them. *}
+text \<open>This section contains the minterms definition and some propositions related to them.\<close>
 
 theory Minterm
 imports 
@@ -12,7 +12,7 @@ imports
 begin
 
 
-subsection {* Minterms Definition *}
+subsection \<open>Minterms Definition\<close>
 
 typedef ('var, 'k::finite) minterm 
   = "{S. ((\<exists>!l\<in>S::('var, 'k::finite) literal set. \<exists>n. 
@@ -147,7 +147,7 @@ proof
 qed
 
 
-subsection {* Minterm Casts *}
+subsection \<open>Minterm Casts\<close>
 
 definition to_literal_set :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "to_literal_set M = Rep_minterm M"
@@ -159,27 +159,27 @@ definition to_sl_formula_set ::  "('var, 'k::finite) minterm \<Rightarrow> ('var
   where "to_sl_formula_set M =  {(to_sl_formula l)|l. l \<in> (to_literal_set M)}"
 
 
-subsection {* Minterm Complement *}
+subsection \<open>Minterm Complement\<close>
 
 definition minterm_complement :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) minterm"
   where "minterm_complement M = (to_minterm {(literal_complement l) | l. l\<in>(to_literal_set M)})"
 
 
-subsection {* Minterm Var Set *}
+subsection \<open>Minterm Var Set\<close>
 
 definition minterm_var_set :: "('var, 'k::finite) minterm \<Rightarrow> 'var set"
   where "minterm_var_set M = {x. \<exists>l\<in>(to_literal_set M). x\<in>(literal_var_set l)}"
 
 
-subsection {* Minterm Evaluation *}
+subsection \<open>Minterm Evaluation\<close>
 
 definition minterm_evl :: "('var, 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) minterm \<Rightarrow> bool"
   where "minterm_evl I M = literal_set_evl I (to_literal_set M)"
 
 
-subsection {* Sets Definitions *}
+subsection \<open>Sets Definitions\<close>
 
-subsubsection {* Intersections Sets *}
+subsubsection \<open>Intersections Sets\<close>
 
 definition e_literals :: "('var, 'k::finite) literal set"
   where "e_literals = {to_literal (sl_eq x y)|x y. True} 
@@ -198,7 +198,7 @@ definition h_literals :: "('var, 'k::finite) literal set"
                     \<union> {to_literal (sl_not (ext_card_heap_ge n)) |n. True}"
 
 
-subsubsection {* Minterms Sets Composed by an Intersection *}
+subsubsection \<open>Minterms Sets Composed by an Intersection\<close>
 
 definition e_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "e_minterm M = to_literal_set M \<inter> e_literals"
@@ -213,9 +213,9 @@ definition h_minterm :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) lit
   where "h_minterm M = to_literal_set M \<inter> h_literals"
 
 
-subsection {* Completeness Definitions *}
+subsection \<open>Completeness Definitions\<close>
 
-subsubsection {* E-complete *}
+subsubsection \<open>E-complete\<close>
 
 definition E_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
   where "E_complete S M 
@@ -224,7 +224,7 @@ definition E_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Ri
   \<or> (to_literal (sl_not (sl_eq x y))) \<in> (to_literal_set M))"
 
 
-subsubsection {* A-complete *}
+subsubsection \<open>A-complete\<close>
 
 definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Rightarrow> bool"
   where "A_complete S M
@@ -233,21 +233,21 @@ definition A_complete :: "'var set \<Rightarrow> ('var, 'k::finite) minterm \<Ri
   \<or> (to_literal (sl_not (alloc x))) \<in> (to_literal_set M))"
 
 
-subsubsection {* Satisfiability Condition *}
+subsubsection \<open>Satisfiability Condition\<close>
 
 definition minterm_sat :: "('var, 'k::finite) minterm \<Rightarrow> bool"
   where "minterm_sat M = (\<forall>l\<in>(to_literal_set M). (literal_complement l) \<notin> (to_literal_set M))"
 
 
-subsection {* Closures Definitions *}
+subsection \<open>Closures Definitions\<close>
 
-subsubsection {* Complement Closure *}
+subsubsection \<open>Complement Closure\<close>
 
 definition cc :: "('var, 'k::finite) minterm \<Rightarrow> ('var, 'k) literal set"
   where "cc M = (to_literal_set M) \<union> {literal_complement l | l. l\<in>(to_literal_set M)}"
 
 
-subsubsection {* Points-to Closure *}
+subsubsection \<open>Points-to Closure\<close>
 
 definition pc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
   where "pc M = (\<forall>x1. \<forall>y1. \<forall>x2. \<forall>y2.
@@ -257,7 +257,7 @@ definition pc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
              \<longrightarrow> (\<forall>i::'k. (to_literal (sl_eq (y1 $ i) (y2 $ i))) \<in> (to_literal_set M))))"
 
 
-subsubsection {* Domain Closure *}
+subsubsection \<open>Domain Closure\<close>
 
 definition dc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
   where "dc M = (\<forall>n1 n2.
@@ -266,7 +266,7 @@ definition dc :: "('var, 'k::finite) minterm \<Rightarrow> bool"
             \<longrightarrow> (n1 < n2))"
 
 
-subsection {* Footprint-Consistency *}
+subsection \<open>Footprint-Consistency\<close>
 
 definition footprint_consistent :: "('var, 'k::finite) minterm \<Rightarrow> bool"
   where "footprint_consistent M = (\<forall>x1 x2 y1 y2.
@@ -277,9 +277,9 @@ definition footprint_consistent :: "('var, 'k::finite) minterm \<Rightarrow> boo
                                                                                         \<and> to_literal (sl_not (points_to x2 y2)) \<notin> (to_literal_set M))))"
 
 
-subsection {* Useful Results *}
+subsection \<open>Useful Results\<close>
 
-subsubsection {* Minterms Definition *}
+subsubsection \<open>Minterms Definition\<close>
 
 lemma minterm_have_ext_card_heap_ge:
   fixes M::"('var, 'k::finite) minterm"
@@ -316,7 +316,7 @@ proof -
 qed
 
 
-subsubsection {* Minterm Casts *}
+subsubsection \<open>Minterm Casts\<close>
 
 lemma to_literal_set_composed_by_test_formula:
   "\<forall>l \<in> (to_literal_set M). 
@@ -325,7 +325,7 @@ lemma to_literal_set_composed_by_test_formula:
   by (metis literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 
-subsubsection {* Minterm Var Set *}
+subsubsection \<open>Minterm Var Set\<close>
 
 lemma points_to_var_set:
   assumes "to_literal (points_to x y) \<in> to_literal_set M"
@@ -345,7 +345,7 @@ proof
 qed
 
 
-subsubsection {* Sets Definitions *}
+subsubsection \<open>Sets Definitions\<close>
 
 lemma to_atom_charact:
   assumes "to_atom l \<in> test_formulae"
@@ -393,7 +393,7 @@ lemma from_to_atom_in_p_minterm:
   by (metis assms(1) assms(2) literal_atom_cases_tmp pos_literal_inv to_atom_is_test_formula)
 
 
-subsubsection {* Equality in Minterm *}
+subsubsection \<open>Equality in Minterm\<close>
 
 lemma eq_var_set:
   assumes "to_literal (sl_eq x y) \<in> to_literal_set M"
@@ -463,7 +463,7 @@ proof -
 qed
 
 
-subsection {* Minterms Sets Equality *}
+subsection \<open>Minterms Sets Equality\<close>
 
 lemma minterms_sets_equality:
   fixes M::"('var, 'k::finite) minterm"
@@ -486,7 +486,7 @@ next
 qed
 
 
-subsection {* Proposition 5 *}
+subsection \<open>Proposition 5\<close>
 
 lemma minterm_prop_5:
   fixes I_1::"('var, 'addr, 'k::finite) interp"
@@ -514,7 +514,7 @@ proof -
 qed
 
 
-subsection {* Proposition 7 *}
+subsection \<open>Proposition 7\<close>
 
 lemma minterm_prop_7_pc:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -583,7 +583,7 @@ lemma minterm_prop7:
   using assms(1) assms(2) minterm_prop_7_dc minterm_prop_7_pc by blast
 
 
-subsection {* Proposition 9 *}
+subsection \<open>Proposition 9\<close>
 
 lemma minterm_prop_9_not_E_complete:
   fixes M::"('var, 'k::finite) minterm"

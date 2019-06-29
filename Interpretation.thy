@@ -2,9 +2,9 @@
     Author:     Nicolas Amat, Mnacho Echenim, Nicolas Peltier
 *)
 
-section {* Interpretations *}
+section \<open>Interpretations\<close>
 
-text {* This section contains the interpretations. *}
+text \<open>This section contains the interpretations.\<close>
 
 theory Interpretation
 imports 
@@ -14,7 +14,7 @@ imports
 begin
 
 
-subsection {* Heaps *}
+subsection \<open>Heaps\<close>
 
 definition a_heap :: "('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> bool"
   where "a_heap h \<longleftrightarrow> finite (dom h)"
@@ -24,12 +24,12 @@ typedef ('addr, 'k) heaps = "{(h::'addr \<Rightarrow> (('addr, 'k) vec) option).
   using finite_dom_map_of by auto
 
 
-subsection {* Interpretations *}
+subsection \<open>Interpretations\<close>
 
 type_synonym ('var, 'addr, 'k) interp = "('var \<Rightarrow> 'addr) \<times> (('addr, 'k) heaps)"
 
 
-subsection {* Heap and Store from an Interpretation *}
+subsection \<open>Heap and Store from an Interpretation\<close>
 
 definition store :: "('var, 'addr, 'k) interp \<Rightarrow> ('var \<Rightarrow> 'addr)" 
   where "store I = fst I"
@@ -38,25 +38,25 @@ definition heap :: "('var, 'addr, 'k) interp \<Rightarrow> ('addr, 'k) heaps"
   where "heap I = snd I"
 
 
-subsection {* Interpretation from an Heap and a Store *}
+subsection \<open>Interpretation from an Heap and a Store\<close>
 
 definition to_interp :: "('var \<Rightarrow> 'addr) \<Rightarrow> (('addr, 'k) heaps) \<Rightarrow> ('var, 'addr, 'k) interp"
   where "to_interp s h = (s, h)"
 
 
-subsection {* Get Elements from an Heap *}
+subsection \<open>Get Elements from an Heap\<close>
 
 definition get_from_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) vec option"
   where "get_from_heap h x = Rep_heaps h x"
 
 
-subsection {* Consecutive Store and Heap on a Variable *}
+subsection \<open>Consecutive Store and Heap on a Variable\<close>
 
 definition store_and_heap :: "('var, 'addr, 'k) interp \<Rightarrow> 'var => ('addr, 'k) vec option"
   where "store_and_heap I x = get_from_heap (heap I) ((store I) x)"
 
 
-subsection {* Heap Operations *}
+subsection \<open>Heap Operations\<close>
 
 definition h_dom :: "('addr, 'k) heaps \<Rightarrow> 'addr set"
   where "h_dom h = {a. Rep_heaps h a \<noteq> None}"
@@ -77,7 +77,7 @@ definition card_heap :: "('addr, 'k) heaps \<Rightarrow> enat"
   where "card_heap h = card (h_dom h)"
 
 
-subsection {* Heap Constructors *}
+subsection \<open>Heap Constructors\<close>
 
 definition h_empty :: "('addr, 'k) heaps"
   where "h_empty \<equiv> Abs_heaps(\<lambda>x. None)"
@@ -92,19 +92,19 @@ definition add_to_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> (
   where "add_to_heap h x y = Abs_heaps ((Rep_heaps h) (x := Some y))"
 
 
-subsection {* Heap Restriction *}
+subsection \<open>Heap Restriction\<close>
 
 definition restricted_heap :: "('addr, 'k) heaps \<Rightarrow> 'addr \<Rightarrow> ('addr, 'k) heaps"
   where "restricted_heap h x = Abs_heaps ((Rep_heaps h_empty)(x := get_from_heap h x))"
 
 
-subsection {* Heap Cast *}
+subsection \<open>Heap Cast\<close>
 
 definition to_heap :: "('addr \<Rightarrow> (('addr, 'k) vec) option) \<Rightarrow> ('addr, 'k) heaps"
   where "to_heap h = (if (finite (dom h)) then Abs_heaps h else h_empty)"
 
 
-subsection {* Store Applied on a Vector *}
+subsection \<open>Store Applied on a Vector\<close>
 
 definition addr_from_var_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::finite) vec \<Rightarrow> 'k \<Rightarrow> 'addr"
   where "addr_from_var_vector s v k = (s (vec_nth v k))"
@@ -113,15 +113,15 @@ definition store_vector :: "('var \<Rightarrow> 'addr) \<Rightarrow> ('var, 'k::
   where "store_vector s v =  vec_lambda (addr_from_var_vector s v)"
 
 
-subsection {* Store Applied on a Set *}
+subsection \<open>Store Applied on a Set\<close>
 
 definition store_set :: "('var \<Rightarrow> 'addr) \<Rightarrow> 'var set \<Rightarrow> 'addr set"
   where "store_set s X = {s x | x. x \<in> X}"
 
 
-subsection {* Useful Results *}
+subsection \<open>Useful Results\<close>
 
-subsubsection {* Heap and Store from an Interpretation *}
+subsubsection \<open>Heap and Store from an Interpretation\<close>
 
 lemma store_on_to_interp:
   fixes I::"('var, 'addr, 'k) interp"
@@ -137,7 +137,7 @@ lemma heap_on_to_interp:
   by (simp add: heap_def to_interp_def)
 
 
-subsubsection {* Get Elements from an Heap *}
+subsubsection \<open>Get Elements from an Heap\<close>
 
 lemma get_from_add_to_heap:
   fixes x::'addr
@@ -146,7 +146,7 @@ lemma get_from_add_to_heap:
   by (simp add: Abs_heaps_inverse a_heap_def add_to_heap_def get_from_heap_def h_empty_def)
 
 
-subsubsection {* Consecutive Store and Heap on a Variable *}
+subsubsection \<open>Consecutive Store and Heap on a Variable\<close>
 
 lemma store_and_heap_on_to_interp:
   fixes I::"('var, 'addr, 'k) interp"
@@ -175,7 +175,7 @@ lemma store_and_heap_with_Rep_heaps:
   by (simp add: get_from_heap_def store_and_heap_def)
 
 
-subsubsection {* Heap Operations *}
+subsubsection \<open>Heap Operations\<close>
 
 lemma finite_union_heaps:
   fixes h1::"('addr, 'k) heaps"
@@ -242,7 +242,7 @@ proof -
 qed
 
 
-subsubsection {* Heap Constructors *}
+subsubsection \<open>Heap Constructors\<close>
 
 lemma h_dom_empty_heap:
   "h_dom h_empty = {}"
@@ -367,7 +367,7 @@ proof -
 qed
 
 
-subsubsection {* Heap Restriction *}
+subsubsection \<open>Heap Restriction\<close>
 
 lemma dom_restricted_heap:
   fixes h::"('addr, 'k) heaps"
@@ -392,7 +392,7 @@ lemma restricted_heap_not_empty:
 qed
 
 
-subsubsection {* Heap Cast *}
+subsubsection \<open>Heap Cast\<close>
 
 lemma to_heap_domain:
   assumes "finite (dom h)"
@@ -400,7 +400,7 @@ lemma to_heap_domain:
   by (simp add: Abs_heaps_inverse a_heap_def dom_def)
 
 
-subsubsection {* Store Applied on a Vector *}
+subsubsection \<open>Store Applied on a Vector\<close>
 
 lemma equality_store_vector:
   assumes "(store_vector s y1) = (store_vector s y2)"
@@ -416,7 +416,7 @@ proof
 qed
 
 
-subsubsection {* Store Applied on a Set *}
+subsubsection \<open>Store Applied on a Set\<close>
 
 lemma antecedent_store_set:
   fixes I::"('var, 'addr, 'k) interp"

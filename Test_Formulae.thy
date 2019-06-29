@@ -2,9 +2,9 @@
     Author:     Nicolas Amat, Mnacho Echenim, Nicolas Peltier
 *)
 
-section {* Test Formulae *}
+section \<open>Test Formulae\<close>
 
-text {* This section contains the test formulas and literals. *}
+text \<open>This section contains the test formulas and literals.\<close>
 
 theory Test_Formulae
 imports
@@ -14,19 +14,19 @@ imports
 begin
 
 
-subsection {* Points-to Relations in the Heap *}
+subsection \<open>Points-to Relations in the Heap\<close>
 
 definition points_to :: "'var \<Rightarrow> ('var, 'k) vec \<Rightarrow> ('var, 'k::finite) sl_formula"
   where "points_to x y =  sl_conj (sl_mapsto x y) sl_true"
 
 
-subsection {* Allocation *}
+subsection \<open>Allocation\<close>
 
 definition alloc :: "'var \<Rightarrow> ('var, 'k::finite) sl_formula"
   where "alloc x = sl_magic_wand (sl_mapsto x (vec x)) sl_false"
 
 
-subsection {* Cardinality Constraint *}
+subsection \<open>Cardinality Constraint\<close>
 
 fun card_heap_ge :: "nat \<Rightarrow> ('var, 'k::finite) sl_formula"
   where   
@@ -39,7 +39,7 @@ fun ext_card_heap_ge ::  "enat \<Rightarrow> ('var, 'k::finite) sl_formula"
     | "ext_card_heap_ge n = card_heap_ge n"
 
 
-subsection {* Test Formulae Set *}
+subsection \<open>Test Formulae Set\<close>
 
 inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
   where
@@ -49,9 +49,9 @@ inductive_set test_formulae :: "('var, 'k::finite) sl_formula set"
   | "(sl_eq x y) \<in> test_formulae"
 
 
-subsection {* Proposition 1 *}
+subsection \<open>Proposition 1\<close>
 
-subsubsection {* Proposition 1 Part 1 *}
+subsubsection \<open>Proposition 1 Part 1\<close>
 
 lemma tf_prop_1_1:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -95,7 +95,7 @@ next
 qed
 
 
-subsubsection {* Proposition 1 Part 2 *}
+subsubsection \<open>Proposition 1 Part 2\<close>
 
 lemma tf_prop_1_2:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -132,7 +132,7 @@ next
 qed
 
 
-subsubsection {* Proposition 1 Part 3 *}
+subsubsection \<open>Proposition 1 Part 3\<close>
 
 lemma tf_prop_1_3:
   fixes I::"('var, 'addr, 'k::finite) interp"
@@ -215,14 +215,14 @@ next
 qed
 
 
-subsection {* Literals Definition *}
+subsection \<open>Literals Definition\<close>
 
 typedef ('var, 'k::finite) literal 
   = "{f::('var, 'k) sl_formula. f \<in> test_formulae} \<union> {(sl_not f)|f. f \<in> test_formulae}"
   using test_formulae.intros(1) by fastforce
 
 
-subsection {* Literal Casts *}
+subsection \<open>Literal Casts\<close>
 
 definition to_sl_formula :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) sl_formula"
   where "to_sl_formula f = Rep_literal f"
@@ -234,7 +234,7 @@ definition to_literal_set :: "('var, 'k::finite) sl_formula set \<Rightarrow> ('
   where "to_literal_set S = {to_literal x|x. True}"
 
 
-subsection {* Literal Atom *}
+subsection \<open>Literal Atom\<close>
 
 fun remove_first_not :: "('var, 'k::finite) sl_formula \<Rightarrow> ('var ,'k) sl_formula"
   where "remove_first_not (sl_not l) = l"
@@ -244,19 +244,19 @@ definition to_atom :: "('var, 'k::finite) literal \<Rightarrow> ('var ,'k) sl_fo
   where "to_atom l = remove_first_not (to_sl_formula l)"
 
 
-subsection {* Literal Complement *}
+subsection \<open>Literal Complement\<close>
 
 definition literal_complement :: "('var, 'k::finite) literal \<Rightarrow> ('var, 'k) literal"
   where "literal_complement l = to_literal (sl_formula_complement (to_sl_formula l))"
 
 
-subsection {* Literal Var Set *}
+subsection \<open>Literal Var Set\<close>
 
 definition literal_var_set :: "('var, 'k::finite) literal \<Rightarrow> 'var set"
   where "literal_var_set l =  var_set (to_sl_formula l)"
 
 
-subsection {* Literals Evaluation *}
+subsection \<open>Literals Evaluation\<close>
 
 definition literal_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> ('var, 'k) literal \<Rightarrow> bool"
   where "literal_evl I l = evaluation I (to_sl_formula l)"
@@ -265,7 +265,7 @@ definition literal_set_evl :: "('var , 'addr, 'k::finite) interp \<Rightarrow> (
   where "literal_set_evl I S = (\<forall>l\<in>S. literal_evl I l)"
 
 
-subsection {* Literal Footprint *}
+subsection \<open>Literal Footprint\<close>
 
 definition av :: "('var, 'k::finite) literal set \<Rightarrow> 'var set"
   where "av T = {x1 | x1 x2. (to_literal (sl_eq x1 x2) \<in> T)
@@ -282,9 +282,9 @@ definition fp :: "'var set \<Rightarrow> ('var, 'k::finite) literal set \<Righta
                      \<union> {to_literal (sl_not (points_to x y)) | x y. x \<in> X})"
 
 
-subsection {* Useful Results *}
+subsection \<open>Useful Results\<close>
 
-subsubsection {* Cardinality Constraint *}
+subsubsection \<open>Cardinality Constraint\<close>
 
 lemma heap_card_domain_card:
   fixes A::"'addr set"
@@ -351,7 +351,7 @@ proof -
 qed
 
 
-subsubsection {* Test Formulae Set *}
+subsubsection \<open>Test Formulae Set\<close>
 
 lemma test_formulae_charact:
   "test_formulae = {(sl_eq x y)|x y. True} 
@@ -367,7 +367,7 @@ next
 qed
 
 
-subsubsection {* Literal Casts *}
+subsubsection \<open>Literal Casts\<close>
 
 lemma pos_literal_inv[simp]:
   fixes f::"('var, 'k::finite) sl_formula"
@@ -382,7 +382,7 @@ lemma neg_literal_inv[simp]:
 by (simp add: Abs_literal_inverse assms to_literal_def to_sl_formula_def)
 
 
-subsubsection {* Literal Atom *}
+subsubsection \<open>Literal Atom\<close>
 
 lemma literal_atom_cases_tmp:
   "(to_literal (to_atom l) = l) \<or> to_literal (sl_not (to_atom l)) = l"
@@ -474,9 +474,9 @@ next
 qed
 
 
-subsection {* Propostions *}
+subsection \<open>Propostions\<close>
 
-subsubsection {* Propostion 3 *}
+subsubsection \<open>Propostion 3\<close>
 
 (* Case 1 *)
 
